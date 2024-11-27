@@ -1,7 +1,34 @@
+use std::fmt::format;
+
+use regex::Regex;
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
     Number,
     String,
+}
+
+impl TokenType {
+    /**
+     * Tokenizer spec.
+     */
+    const SPEC: [(Option<TokenType>, &str); 6] = [
+        // ----- WHITESPACES -----
+        (None, r"^\s+"),
+
+        // ----- SINGLE-LINE COMMENTS -----
+        (None, r"^(//.*)"),
+
+        // ----- MULTI-LINE COMMENTS -----
+        (None, r"^(/*[\s\S]*?\*/)"),
+
+        // ----- NUMBERS -----
+        (Some(Self::Number), r"^(\d+)"),
+
+        // ----- STRINGS -----
+        (Some(Self::String), r#"^".*""#),
+        (Some(Self::String), r#"^'.*'"#),
+    ];
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -37,56 +64,37 @@ impl Tokenizer {
     }
 
     /**
-     * Whether the tokenizer reached EOF.
-     */
-    fn is_eof(&self) -> bool {
-        self.cursor == self.content_string.len()
-    }
-
-    /**
      * Obtains next token.
      */
-    pub fn get_next_token(&mut self) -> Option<Token> {
+    pub fn get_next_token(&mut self) -> Result<Option<Token>, SyntaxError> {
         if !self.has_tokens() {
-            return Option::None;
+            return Ok(None);
         }
 
-        // Numbers:
-        if self.content_string.chars().nth(self.cursor)?.is_numeric() {
-            let mut number = String::new();
-            for c in self.content_string[self.cursor..].chars() {
-                if !c.is_numeric() {
-                    break
-                }
-                number.push(c);
-                self.cursor += 1;
+        for (token_type, regex) in TokenType::SPEC {
+            let re = Regex::new(regex).unwrap();
+            if let Some(caps) = re.captures(&self.content_string[self.cursor..]) {
+                let cap = &caps[0];
+                self.cursor += cap.len();
+
+                // Should skip token, e.g. whitespaces
+                return match token_type {
+                    None => self.get_next_token(),
+                    Some(token_type) => Ok(Some(Token {
+                        token_type,
+                        value: cap.to_string(),
+                    }))
+                };
             }
-            return Option::Some(Token {
-                token_type: TokenType::Number,
-                value: number,
-            })
         }
 
-        // Strings:
-        if self.content_string.chars().nth(self.cursor)? == '"' {
-            let mut string = String::new();
-            for c in self.content_string[self.cursor..].chars() {
-                string.push(c);
-                self.cursor += 1;
-                if self.is_eof() || self.content_string.chars().nth(self.cursor).unwrap() == '"' {
-                    break;
-                }
-            }
-            if !self.is_eof() && self.content_string.chars().nth(self.cursor).unwrap() == '"' {
-                string.push(self.content_string.chars().nth(self.cursor).unwrap());
-                self.cursor += 1;
-            }
-            return Option::Some(Token {
-                token_type: TokenType::String,
-                value: string,
-            })
-        }
-
-        return Option::None;
+        Err(SyntaxError {
+            message: format(format_args!("Unexpected token: {}", self.content_string.chars().nth(self.cursor).unwrap())),
+        })
     }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct SyntaxError {
+    pub message: String,
 }
