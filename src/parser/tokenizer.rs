@@ -21,13 +21,18 @@ pub enum TokenType {
     // ----- OPERATORS -----
     AdditiveOperator,
     MultiplicativeOperator,
+    SimpleAssignmentOperator,
+    ComplexAssignmentOperator,
+
+    // ----- IDENTIFIERS -----
+    Identifier,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 13] = [
+    const SPEC: [(Option<TokenType>, &str); 16] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -51,7 +56,14 @@ impl TokenType {
         (Some(Self::String), r#"^(".*?")"#),
         (Some(Self::String), r#"^('.*?')"#),
 
-        // ----- OPERATORS -----
+        // ----- IDENTIFIERS -----
+        (Some(Self::Identifier), r"^(\w+)"),
+
+        // ----- ASSIGNMENT OPERATORS -----
+        (Some(Self::SimpleAssignmentOperator), r"^(=)"),
+        (Some(Self::ComplexAssignmentOperator), r"^([\+|\-|\*|/]=)"),
+
+        // ----- MATH OPERATORS -----
         (Some(Self::AdditiveOperator), r"^(\+|-)"),
         (Some(Self::MultiplicativeOperator), r"^(\*|/)"),
     ];

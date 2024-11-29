@@ -121,11 +121,76 @@ impl Parser {
 
     /**
      * Expression
-     *  : AdditiveExpression
+     *  : AssignmentExpression
      *  ;
      */
     fn expression(&mut self) -> Result<Tree, SyntaxError> {
-        self.additive_expression()
+        self.assignment_expression()
+    }
+
+    /**
+     * AssignmentExpression
+     *  : AdditiveExpression
+     *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
+     *  ;
+     */
+    fn assignment_expression(&mut self) -> Result<Tree, SyntaxError> {
+        let mut left = self.additive_expression()?;
+
+        // Checking if the lookahead token is not of assignment type, then its an AdditiveExpression
+        if !self.is_assignment_operator() {
+            return Ok(left);
+        }
+
+        // Consuming assignment operator
+        let operator = self.assignment_operator()?.value;
+
+        // Checking if the left hand side expression is valid, aka an identifier
+        left = self.check_valid_assignment_target(left)?;
+
+        // Right-recursing to create the AssignmentExpression
+        let right = self.assignment_expression()?;
+
+        Ok(Tree::AssignmentExpression { 
+            operator, 
+            left: Box::new(left),
+            right: Box::new(right),
+        })
+    }
+
+    /**
+     * Whether the token is an assignment operator.
+     */
+    fn is_assignment_operator(&self) -> bool {
+        match self.lookahead.token_type {
+            TokenType::SimpleAssignmentOperator | TokenType::ComplexAssignmentOperator => true,
+            _ => false,
+        }
+    }
+
+    /**
+     * Extra check whether it's valid assignment target.
+     */
+    fn check_valid_assignment_target(&mut self, node: Tree) -> Result<Tree, SyntaxError> {
+        if let Tree::Identifier {..} = node {
+            return Ok(node);
+        }
+        Err(SyntaxError {
+            message: String::from("Invalid left-hand side in assignment expression, expected Identifier!"),
+        })
+    }
+
+    /**
+     * AssignmentOperator
+     *  : SIMPLE_ASSIGNMENT_OPERATOR
+     *  | COMPLEX_ASSIGNMENT_OPERATOR
+     *  ;
+     */
+    fn assignment_operator(&mut self) -> Result<Token, SyntaxError> {
+        match self.lookahead.token_type {
+            TokenType::SimpleAssignmentOperator => self.eat(TokenType::SimpleAssignmentOperator),
+            _ => self.eat(TokenType::ComplexAssignmentOperator),
+        }
     }
 
     /**
@@ -189,13 +254,34 @@ impl Parser {
      * PrimaryExpression
      *  : Literal
      *  | ParanthesizedExpression
+     *  | LeftHandSideExpression
      *  ;
      */
     fn primary_expression(&mut self) -> Result<Tree, SyntaxError> {
         match self.lookahead.token_type {
+            TokenType::Number | TokenType::String => self.literal(),
             TokenType::CircleBracketOpen => self.paranthesized_expression(),
-            _ => self.literal(),
+            _ => self.left_hand_side_expression(),
         }
+    }
+
+    /**
+     * LeftHandSideExpression
+     *  : Identifier
+     *  ;
+     */
+    fn left_hand_side_expression(&mut self) -> Result<Tree, SyntaxError> {
+        self.identifier()
+    }
+
+    /**
+     * Identifier
+     *  : IDENTIFIER
+     *  ;
+     */
+    fn identifier(&mut self) -> Result<Tree, SyntaxError> {
+        let name = self.eat(TokenType::Identifier)?.value;
+        Ok(Tree::Identifier { name })
     }
 
     /**
@@ -230,9 +316,12 @@ impl Parser {
      */
     fn numeric_literal(&mut self) -> Result<Tree, SyntaxError> {
         let token = self.eat(TokenType::Number)?;
-
-        let parsed = token.value.parse().expect("Expected a numeric value!");
-        return Ok(Tree::NumericLiteral { value: parsed })
+        match token.value.parse() {
+            Err(_) => Err(SyntaxError {
+                message: String::from("Expected a parsable numeric value!"),
+            }),
+            Ok(parsed) => Ok(Tree::NumericLiteral { value: parsed })
+        }
     }
 
     /**
@@ -277,6 +366,15 @@ mod tests {
         let tree_result = parser.parse();
         assert!(tree_result.is_ok());
         assert_eq!(expected, tree_result.unwrap());
+    }
+
+    fn assert_syntax_error(expected: SyntaxError, content_string: &str) {
+        let parser_result = Parser::new(content_string.to_owned());
+        assert!(parser_result.is_ok());
+        let mut parser = parser_result.unwrap();
+        let tree_result = parser.parse();
+        assert!(tree_result.is_err());
+        assert_eq!(expected, tree_result.unwrap_err());
     }
 
     // ----- TESTS FOR COMMENTS ----- //
@@ -334,6 +432,14 @@ mod tests {
             ]), 
         };
         assert_tree(expected, "\"Hello\";");
+    }
+
+    #[test]
+    fn test_parse_missing_semicolon() {
+        let expected = SyntaxError {
+            message: String::from("Unexpected token EOF, expected SemiColon!"),
+        };
+        assert_syntax_error(expected, "42");
     }
 
     // ----- TESTS FOR WHITESPACES ----- //
@@ -451,6 +557,14 @@ mod tests {
         assert_tree(expected, "{{ 42; { 'Hello'; } }{}}");
     }
 
+    #[test]
+    fn test_parse_invalid_block_statement() {
+        let expected = SyntaxError {
+            message: String::from("Unexpected token EOF, expected Identifier!"),
+        };
+        assert_syntax_error(expected, "{");
+    }
+
     // ----- TESTS FOR EMPTY STATEMENT ----- //
 
     #[test]
@@ -560,6 +674,152 @@ mod tests {
             ]), 
         };
         assert_tree(expected, "(3 + 2) / 1;");
+    }
+
+    // ----- TESTS FOR ASSIGNMENT EXPRESSIONS ----- //
+
+    #[test]
+    fn test_parse_simple_assignment_expression_1() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("="), 
+                        left: Box::new(Tree::Identifier { name: String::from("num") }), 
+                        right: Box::new(Tree::NumericLiteral { value: 42.0 }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "num = 42;");
+    }
+
+    #[test]
+    fn test_parse_simple_assignment_expression_2() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("="), 
+                        left: Box::new(Tree::Identifier { name: String::from("str") }), 
+                        right: Box::new(Tree::StringLiteral { value: String::from("Hello, World!") }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "str = 'Hello, World!';");
+    }
+
+    #[test]
+    fn test_parse_simple_assignment_expression_3() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("="), 
+                        left: Box::new(Tree::Identifier { name: String::from("xyz") }), 
+                        right: Box::new(Tree::BinaryExpression { 
+                            operator: String::from("+"), 
+                            left: Box::new(Tree::NumericLiteral { value: 2.0 }), 
+                            right: Box::new(Tree::NumericLiteral { value: 3.0 }),
+                        }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "xyz = 2 + 3;");
+    }
+
+    #[test]
+    fn test_parse_chained_assignment_expression() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("="), 
+                        left: Box::new(Tree::Identifier { name: String::from("x") }), 
+                        right: Box::new(Tree::AssignmentExpression { 
+                            operator: String::from("="), 
+                            left: Box::new(Tree::Identifier { name: String::from("y") }), 
+                            right: Box::new(Tree::NumericLiteral { value: 42.0 }),
+                        }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "x = y = 42;");
+    }
+
+    #[test]
+    fn test_parse_complex_assignment_expression_1() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("+="), 
+                        left: Box::new(Tree::Identifier { name: String::from("num") }), 
+                        right: Box::new(Tree::NumericLiteral { value: 42.0 }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "num += 42;");
+    }
+
+    #[test]
+    fn test_parse_complex_assignment_expression_2() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("-="), 
+                        left: Box::new(Tree::Identifier { name: String::from("num") }), 
+                        right: Box::new(Tree::NumericLiteral { value: 42.0 }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "num -= 42;");
+    }
+
+    #[test]
+    fn test_parse_complex_assignment_expression_3() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("*="), 
+                        left: Box::new(Tree::Identifier { name: String::from("num") }), 
+                        right: Box::new(Tree::NumericLiteral { value: 42.0 }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "num *= 42;");
+    }
+
+    #[test]
+    fn test_parse_complex_assignment_expression_4() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::AssignmentExpression { 
+                        operator: String::from("/="), 
+                        left: Box::new(Tree::Identifier { name: String::from("num") }), 
+                        right: Box::new(Tree::NumericLiteral { value: 42.0 }),
+                    }), 
+                },
+            ]),
+        };
+        assert_tree(expected, "num /= 42;");
+    }
+
+    #[test]
+    fn test_parse_invalid_assignment_expression() {
+        let expected = SyntaxError {
+            message: String::from("Invalid left-hand side in assignment expression, expected Identifier!"),
+        };
+        assert_syntax_error(expected, "42 = 42;");
     }
 
 }
