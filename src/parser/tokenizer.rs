@@ -6,13 +6,14 @@ use regex::Regex;
 pub enum TokenType {
     Number,
     String,
+    SemiColon,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 6] = [
+    const SPEC: [(Option<TokenType>, &str); 7] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -21,6 +22,9 @@ impl TokenType {
 
         // ----- MULTI-LINE COMMENTS -----
         (None, r"^(/*[\s\S]*?\*/)"),
+
+        // ----- SYMBOLS & DELIMITERS -----
+        (Some(Self::SemiColon), r"^(;)"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),

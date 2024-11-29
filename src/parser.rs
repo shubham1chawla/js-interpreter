@@ -1,6 +1,6 @@
 use std::fmt::format;
 
-use tree::{Tree, TreeNodeType};
+use tree::Tree;
 use tokenizer::{SyntaxError, Token, TokenType, Tokenizer};
 
 mod tree;
@@ -44,15 +44,57 @@ impl Parser {
      * This function is the main entry point of the parser.
      * 
      * Program
-     *  : Literal
+     *  : StatementList
      *  ;
      */
     fn program(&mut self) -> Result<Tree, SyntaxError> {
-        let node = self.literal()?;
-        return Ok(Tree::Program {
-            node_type: TreeNodeType::Program,
-            body: Box::new(node),
-        });
+        let statement_list = self.statement_list()?;
+        return Ok(Tree::Program { body: Box::new(statement_list) });
+    }
+
+    /**
+     * StatementList
+     *  : Statement
+     *  | StatementList Statement
+     *  ;
+     */
+    fn statement_list(&mut self) -> Result<Vec<Tree>, SyntaxError> {
+        let mut statement_list = vec![];
+        
+        while self.lookahead.is_some() {
+            statement_list.push(self.statement()?);
+        }
+
+        Ok(statement_list)
+    }
+
+    /**
+     * Statement
+     *  : ExpressionStatement
+     *  ;
+     */
+    fn statement(&mut self) -> Result<Tree, SyntaxError> {
+        self.expression_statement()
+    }
+
+    /**
+     * ExpressionStatement
+     *  : Expression ';'
+     *  ;
+     */
+    fn expression_statement(&mut self) -> Result<Tree, SyntaxError> {
+        let expression = self.expression()?;
+        self.eat(TokenType::SemiColon)?;
+        Ok(Tree::ExpressionStatement { expression: Box::new(expression) })
+    }
+
+    /**
+     * Expression
+     *  : Literal
+     *  ;
+     */
+    fn expression(&mut self) -> Result<Tree, SyntaxError> {
+        self.literal()
     }
 
     /**
@@ -62,17 +104,10 @@ impl Parser {
      *  ;
      */
     fn literal(&mut self) -> Result<Tree, SyntaxError> {
-        let lookahead = self.lookahead.clone();
-        match lookahead {
-            None => Err(SyntaxError {
-                message: "Unexpected EOF, expected a literal!".to_owned(),
-            }),
-            Some(token) => {
-                match token.token_type {
-                    TokenType::Number => self.numeric_literal(),
-                    TokenType::String => self.string_literal(),
-                }
-            }
+        let lookahead = self.lookahead.clone().unwrap();
+        match lookahead.token_type {
+            TokenType::Number => self.numeric_literal(),
+            _ => self.string_literal(),
         }
     }
 
@@ -84,10 +119,7 @@ impl Parser {
     fn numeric_literal(&mut self) -> Result<Tree, SyntaxError> {
         let token = self.eat(TokenType::Number)?;
         let parsed = token.value.parse().expect("Expected a numeric value!");
-        return Ok(Tree::NumericLiteral { 
-            node_type: TreeNodeType::NumericLiteral, 
-            value: parsed 
-        })
+        return Ok(Tree::NumericLiteral { value: parsed })
     }
 
     /**
@@ -100,12 +132,13 @@ impl Parser {
 
         // Removing quotes from start and end
         let value = String::from(&token.value[1..(token.value.len()-1)]);
-        return Ok(Tree::StringLiteral { 
-            node_type: TreeNodeType::StringLiteral, 
-            value, 
-        })
+        return Ok(Tree::StringLiteral { value })
     }
 
+    /**
+     * Eats a token and advances the lookahead token.
+     * Throws a Syntax error if lookahead doesn't match supplied token.
+     */
     fn eat(&mut self, token_type: TokenType) -> Result<Token, SyntaxError> {
         let lookahead = self.lookahead.clone();
         match lookahead {
@@ -131,139 +164,121 @@ impl Parser {
 mod tests {
     use super::*;
 
+    fn assert_tree(expected: Tree, content_string: &str) {
+        let parser_result = Parser::new(content_string.to_owned());
+        assert!(parser_result.is_ok());
+        let mut parser = parser_result.unwrap();
+        let tree_result = parser.parse();
+        assert!(tree_result.is_ok());
+        assert_eq!(expected, tree_result.unwrap());
+    }
+
+    // ----- TESTS FOR COMMENTS ----- //
+
     #[test]
     fn test_parse_single_line_comments() {
-        let content_string = "// Comment \n 42";
-        let result = Parser::new(content_string.to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let node = parser.literal();
-        assert!(node.is_ok());
-        let expected = Tree::NumericLiteral { 
-            node_type: TreeNodeType::NumericLiteral, 
-            value: 42.0, 
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
+                }
+            ]), 
         };
-        assert_eq!(expected, node.unwrap());
+        assert_tree(expected, "// Comment \n 42;");
     }
 
     #[test]
     fn test_parse_multi_line_comments() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
+                }
+            ]), 
+        };
         let content_string = "\
         /* Multi-line comment \n\
         * Hello
         */
-        \"Hello\"";
-        let result = Parser::new(content_string.to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let node = parser.literal();
-        assert!(node.is_ok());
-        let expected = Tree::StringLiteral { 
-            node_type: TreeNodeType::StringLiteral, 
-            value: "Hello".to_owned(), 
-        };
-        assert_eq!(expected, node.unwrap());
+        \"Hello\";";
+        assert_tree(expected, content_string);
     }
+
+    // ----- TESTS FOR LITERALS ----- //
 
     #[test]
     fn test_parse_literal_numeric() {
-        let result = Parser::new("42".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let node = parser.literal();
-        assert!(node.is_ok());
-        let expected = Tree::NumericLiteral { 
-            node_type: TreeNodeType::NumericLiteral, 
-            value: 42.0, 
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
+                }
+            ]), 
         };
-        assert_eq!(expected, node.unwrap());
-    }
-
-    #[test]
-    fn test_parse_literal_numeric_with_whitespaces() {
-        let result = Parser::new("   42".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let node = parser.literal();
-        assert!(node.is_ok());
-        let expected = Tree::NumericLiteral { 
-            node_type: TreeNodeType::NumericLiteral, 
-            value: 42.0, 
-        };
-        assert_eq!(expected, node.unwrap());
+        assert_tree(expected, "42;");
     }
 
     #[test]
     fn test_parse_literal_string() {
-        let result = Parser::new("\"Hello\"".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let node = parser.literal();
-        assert!(node.is_ok());
-        let expected = Tree::StringLiteral { 
-            node_type: TreeNodeType::StringLiteral, 
-            value: "Hello".to_owned(), 
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
+                }
+            ]), 
         };
-        assert_eq!(expected, node.unwrap());
+        assert_tree(expected, "\"Hello\";");
+    }
+
+    // ----- TESTS FOR WHITESPACES ----- //
+
+    #[test]
+    fn test_parse_literal_numeric_with_whitespaces() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
+                }
+            ]), 
+        };
+        assert_tree(expected, "    42;");
     }
 
     #[test]
     fn test_parse_literal_string_with_whitespaces() {
-        let result = Parser::new("  \"  Hello, World!  \"  ".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let node = parser.literal();
-        assert!(node.is_ok());
-        let expected = Tree::StringLiteral { 
-            node_type: TreeNodeType::StringLiteral, 
-            value: "  Hello, World!  ".to_owned(), 
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::StringLiteral { value: "  Hello, World!  ".to_owned() } ),
+                }
+            ]), 
         };
-        assert_eq!(expected, node.unwrap());
+        assert_tree(expected, "  \"  Hello, World!  \";  ");
     }
 
-    #[test]
-    fn test_parse_literal_unexpected_none_token() {
-        let result = Parser::new("".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let expected = Err(SyntaxError {
-            message: "Unexpected EOF, expected a literal!".to_owned(),
-        });
-        assert_eq!(expected, parser.parse());
-    }
+    // ----- TESTS FOR EMPTY FILE ----- //
 
     #[test]
-    fn test_eat_token_type_number() {
-        let result = Parser::new("42".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let expected = Ok(Token {
-            token_type: TokenType::Number,
-            value: "42".to_owned(),
-        });
-        assert_eq!(expected, parser.eat(TokenType::Number));
+    fn test_parse_empty_content() {
+        let expected = Tree::Program { body: Box::new(vec![]) };
+        assert_tree(expected, "");
     }
 
-    #[test]
-    fn test_eat_token_type_string() {
-        let result = Parser::new("\"Hello\"".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let expected = Ok(Token {
-            token_type: TokenType::String,
-            value: "\"Hello\"".to_owned(),
-        });
-        assert_eq!(expected, parser.eat(TokenType::String));
-    }
+    // ----- TESTS FOR STATEMENT LIST ----- //
 
     #[test]
-    fn test_eat_unexpected_empty_input() {
-        let result = Parser::new("".to_owned());
-        assert!(result.is_ok());
-        let mut parser = result.unwrap();
-        let expected = Err(SyntaxError {
-            message: "Unexpected EOF, expected Number!".to_owned(),
-        });
-        assert_eq!(expected, parser.eat(TokenType::Number));
+    fn test_parse_statement_list() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
+                },
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
+                }
+            ]),
+        };
+        assert_tree(expected, "42;\"Hello\";");
     }
+
 }
