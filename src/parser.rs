@@ -11,7 +11,7 @@ mod tokenizer;
  */
 pub struct Parser {
     tokenizer: Tokenizer,
-    lookahead: Option<Token>,
+    lookahead: Token,
 }
 
 impl Parser {
@@ -48,7 +48,7 @@ impl Parser {
      *  ;
      */
     fn program(&mut self) -> Result<Tree, SyntaxError> {
-        let statement_list = self.statement_list()?;
+        let statement_list = self.statement_list(TokenType::EOF)?;
         return Ok(Tree::Program { body: Box::new(statement_list) });
     }
 
@@ -58,10 +58,10 @@ impl Parser {
      *  | StatementList Statement
      *  ;
      */
-    fn statement_list(&mut self) -> Result<Vec<Tree>, SyntaxError> {
+    fn statement_list(&mut self, stop_lookahead_type: TokenType) -> Result<Vec<Tree>, SyntaxError> {
         let mut statement_list = vec![];
-        
-        while self.lookahead.is_some() {
+
+        while self.lookahead.token_type != stop_lookahead_type {
             statement_list.push(self.statement()?);
         }
 
@@ -70,11 +70,42 @@ impl Parser {
 
     /**
      * Statement
-     *  : ExpressionStatement
+     *  : EmptyStatement
+     *  | BlockStatement
+     *  | ExpressionStatement
      *  ;
      */
     fn statement(&mut self) -> Result<Tree, SyntaxError> {
-        self.expression_statement()
+        match self.lookahead.token_type {
+            TokenType::SemiColon => self.empty_statement(),
+            TokenType::CurlyBracketOpen => self.block_statement(),
+            _ => self.expression_statement(),
+        }
+    }
+
+    /**
+     * EmptyStatement
+     *  : ';'
+     *  ;
+     */
+    fn empty_statement(&mut self) -> Result<Tree, SyntaxError> {
+        self.eat(TokenType::SemiColon)?;
+        Ok(Tree::EmptyStatement)
+    }
+
+    /**
+     * BlockStatement
+     *  : '{' OptStatementList '}'
+     *  ;
+     */
+    fn block_statement(&mut self) -> Result<Tree, SyntaxError> {
+        self.eat(TokenType::CurlyBracketOpen)?;
+        let body = match self.lookahead.token_type {
+            TokenType::CurlyBracketClose => vec![],
+            _ => self.statement_list(TokenType::CurlyBracketClose)?,
+        };
+        self.eat(TokenType::CurlyBracketClose)?;
+        Ok(Tree::BlockStatement { body: Box::new(body) })
     }
 
     /**
@@ -104,8 +135,7 @@ impl Parser {
      *  ;
      */
     fn literal(&mut self) -> Result<Tree, SyntaxError> {
-        let lookahead = self.lookahead.clone().unwrap();
-        match lookahead.token_type {
+        match self.lookahead.token_type {
             TokenType::Number => self.numeric_literal(),
             _ => self.string_literal(),
         }
@@ -118,6 +148,7 @@ impl Parser {
      */
     fn numeric_literal(&mut self) -> Result<Tree, SyntaxError> {
         let token = self.eat(TokenType::Number)?;
+
         let parsed = token.value.parse().expect("Expected a numeric value!");
         return Ok(Tree::NumericLiteral { value: parsed })
     }
@@ -140,23 +171,16 @@ impl Parser {
      * Throws a Syntax error if lookahead doesn't match supplied token.
      */
     fn eat(&mut self, token_type: TokenType) -> Result<Token, SyntaxError> {
-        let lookahead = self.lookahead.clone();
-        match lookahead {
-            None => Err(SyntaxError {
-                message: format(format_args!("Unexpected EOF, expected {:?}!", token_type)),
-            }),
-            Some(token) => {
-                if token.token_type != token_type {
-                    return Err(SyntaxError {
-                        message: format(format_args!("Unexpected token {:?}, expected {:?}!", token.token_type, token_type)),
-                    });
-                }
-                
-                // Advance to the next token.
-                self.lookahead = self.tokenizer.get_next_token()?;
-                Ok(token)
-            }
+        if self.lookahead.token_type != token_type {
+            return Err(SyntaxError {
+                message: format(format_args!("Unexpected token {:?}, expected {:?}!", self.lookahead.token_type, token_type)),
+            });
         }
+        
+        // Advance to the next token.
+        let token = self.lookahead.clone();
+        self.lookahead = self.tokenizer.get_next_token()?;
+        Ok(token)
     }
 }
 
@@ -279,6 +303,99 @@ mod tests {
             ]),
         };
         assert_tree(expected, "42;\"Hello\";");
+    }
+
+    // ----- TESTS FOR BLOCK STATEMENT ----- //
+
+    #[test]
+    fn test_parse_empty_block() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::BlockStatement { body: Box::new(vec![]) }
+            ]), 
+        };
+        assert_tree(expected, "{}");
+    }
+
+    #[test]
+    fn test_parse_block_statements() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
+                },
+                Tree::BlockStatement { 
+                    body: Box::new(vec![
+                        Tree::ExpressionStatement { 
+                            expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
+                        }
+                    ]) 
+                },
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
+                }
+            ]), 
+        };
+        assert_tree(expected, "42; { //Commenting 42 -> 42;\n 'Hello'; } \"Hello\";");
+    }
+
+    #[test]
+    fn test_parse_nested_block_statements() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::BlockStatement { 
+                    body: Box::new(vec![
+                        Tree::BlockStatement { 
+                            body: Box::new(vec![
+                                Tree::ExpressionStatement { 
+                                    expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
+                                },
+                                Tree::BlockStatement { 
+                                    body: Box::new(vec![
+                                        Tree::ExpressionStatement { 
+                                            expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
+                                        }
+                                    ]) 
+                                },
+                            ]) 
+                        },
+                        Tree::BlockStatement { 
+                            body: Box::new(vec![]) 
+                        },
+                    ]) 
+                },
+            ]), 
+        };
+        assert_tree(expected, "{{ 42; { 'Hello'; } }{}}");
+    }
+
+    // ----- TESTS FOR EMPTY STATEMENT ----- //
+
+    #[test]
+    fn test_parse_simple_empty_statement() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::EmptyStatement,
+            ]),
+        };
+        assert_tree(expected, ";");
+    }
+
+    #[test]
+    fn test_parse_empty_statements() {
+        let expected = Tree::Program { 
+            body: Box::new(vec![
+                Tree::EmptyStatement,
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
+                },
+                Tree::EmptyStatement,
+                Tree::ExpressionStatement { 
+                    expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
+                }
+            ]),
+        };
+        assert_tree(expected, ";\n42;\n;\n'Hello';");
     }
 
 }

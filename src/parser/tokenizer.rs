@@ -4,16 +4,19 @@ use regex::Regex;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
+    EOF,
     Number,
     String,
     SemiColon,
+    CurlyBracketOpen,
+    CurlyBracketClose,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 7] = [
+    const SPEC: [(Option<TokenType>, &str); 9] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -25,13 +28,15 @@ impl TokenType {
 
         // ----- SYMBOLS & DELIMITERS -----
         (Some(Self::SemiColon), r"^(;)"),
+        (Some(Self::CurlyBracketOpen), r"^(\{)"),
+        (Some(Self::CurlyBracketClose), r"^(\})"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),
 
         // ----- STRINGS -----
-        (Some(Self::String), r#"^".*""#),
-        (Some(Self::String), r#"^'.*'"#),
+        (Some(Self::String), r#"^(".*?")"#),
+        (Some(Self::String), r#"^('.*?')"#),
     ];
 }
 
@@ -70,9 +75,12 @@ impl Tokenizer {
     /**
      * Obtains next token.
      */
-    pub fn get_next_token(&mut self) -> Result<Option<Token>, SyntaxError> {
+    pub fn get_next_token(&mut self) -> Result<Token, SyntaxError> {
         if !self.has_tokens() {
-            return Ok(None);
+            return Ok(Token {
+                token_type: TokenType::EOF,
+                value: String::new(),
+            });
         }
 
         for (token_type, regex) in TokenType::SPEC {
@@ -84,10 +92,10 @@ impl Tokenizer {
                 // Should skip token, e.g. whitespaces
                 return match token_type {
                     None => self.get_next_token(),
-                    Some(token_type) => Ok(Some(Token {
+                    Some(token_type) => Ok(Token {
                         token_type,
                         value: cap.to_string(),
-                    }))
+                    })
                 };
             }
         }
