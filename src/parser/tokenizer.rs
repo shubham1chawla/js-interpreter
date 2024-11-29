@@ -4,19 +4,30 @@ use regex::Regex;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
+    // ----- SPECIAL -----
     EOF,
+
+    // ----- LITERALS -----
     Number,
     String,
+
+    // ----- SYMBOLS & DELIMITERS -----
     SemiColon,
     CurlyBracketOpen,
     CurlyBracketClose,
+    CircleBracketOpen,
+    CircleBracketClose,
+
+    // ----- OPERATORS -----
+    AdditiveOperator,
+    MultiplicativeOperator,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 9] = [
+    const SPEC: [(Option<TokenType>, &str); 13] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -30,6 +41,8 @@ impl TokenType {
         (Some(Self::SemiColon), r"^(;)"),
         (Some(Self::CurlyBracketOpen), r"^(\{)"),
         (Some(Self::CurlyBracketClose), r"^(\})"),
+        (Some(Self::CircleBracketOpen), r"^(\()"),
+        (Some(Self::CircleBracketClose), r"^(\))"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),
@@ -37,6 +50,10 @@ impl TokenType {
         // ----- STRINGS -----
         (Some(Self::String), r#"^(".*?")"#),
         (Some(Self::String), r#"^('.*?')"#),
+
+        // ----- OPERATORS -----
+        (Some(Self::AdditiveOperator), r"^(\+|-)"),
+        (Some(Self::MultiplicativeOperator), r"^(\*|/)"),
     ];
 }
 
