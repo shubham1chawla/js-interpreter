@@ -34,6 +34,23 @@ impl Parser {
     }
 
     /**
+     * Eats a token and advances the lookahead token.
+     * Throws a Syntax error if lookahead doesn't match supplied token.
+     */
+    fn eat(&mut self, token_type: TokenType) -> Result<Token, SyntaxError> {
+        if self.lookahead.token_type != token_type {
+            return Err(SyntaxError {
+                message: format(format_args!("Unexpected token {:?}, expected {:?}!", self.lookahead.token_type, token_type)),
+            });
+        }
+        
+        // Advance to the next token.
+        let token = self.lookahead.clone();
+        self.lookahead = self.tokenizer.get_next_token()?;
+        Ok(token)
+    }
+
+    /**
      * Parses a string into an AST.
      */
     pub fn parse(&mut self) -> Result<Tree, SyntaxError> {
@@ -83,6 +100,31 @@ impl Parser {
             TokenType::LetKeyword => self.variable_statement(),
             _ => self.expression_statement(),
         }
+    }
+
+    /**
+     * EmptyStatement
+     *  : ';'
+     *  ;
+     */
+    fn empty_statement(&mut self) -> Result<Tree, SyntaxError> {
+        self.eat(TokenType::SemiColon)?;
+        Ok(Tree::EmptyStatement)
+    }
+
+    /**
+     * BlockStatement
+     *  : '{' OptStatementList '}'
+     *  ;
+     */
+    fn block_statement(&mut self) -> Result<Tree, SyntaxError> {
+        self.eat(TokenType::CurlyBracketOpen)?;
+        let body = match self.lookahead.token_type {
+            TokenType::CurlyBracketClose => vec![],
+            _ => self.statement_list(TokenType::CurlyBracketClose)?,
+        };
+        self.eat(TokenType::CurlyBracketClose)?;
+        Ok(Tree::BlockStatement { body: Box::new(body) })
     }
 
     /**
@@ -142,31 +184,6 @@ impl Parser {
     fn variable_initializer(&mut self) -> Result<Tree, SyntaxError> {
         self.eat(TokenType::SimpleAssignmentOperator)?;
         self.assignment_expression()
-    }
-
-    /**
-     * EmptyStatement
-     *  : ';'
-     *  ;
-     */
-    fn empty_statement(&mut self) -> Result<Tree, SyntaxError> {
-        self.eat(TokenType::SemiColon)?;
-        Ok(Tree::EmptyStatement)
-    }
-
-    /**
-     * BlockStatement
-     *  : '{' OptStatementList '}'
-     *  ;
-     */
-    fn block_statement(&mut self) -> Result<Tree, SyntaxError> {
-        self.eat(TokenType::CurlyBracketOpen)?;
-        let body = match self.lookahead.token_type {
-            TokenType::CurlyBracketClose => vec![],
-            _ => self.statement_list(TokenType::CurlyBracketClose)?,
-        };
-        self.eat(TokenType::CurlyBracketClose)?;
-        Ok(Tree::BlockStatement { body: Box::new(body) })
     }
 
     /**
@@ -327,6 +344,18 @@ impl Parser {
     }
 
     /**
+     * ParanthesizedExpression
+     *  : '(' Expression ')'
+     *  ;
+     */
+    fn paranthesized_expression(&mut self) -> Result<Tree, SyntaxError> {
+        self.eat(TokenType::CircleBracketOpen)?;
+        let expression = self.expression()?;
+        self.eat(TokenType::CircleBracketClose)?;
+        Ok(expression)
+    } 
+
+    /**
      * LeftHandSideExpression
      *  : Identifier
      *  ;
@@ -344,18 +373,6 @@ impl Parser {
         let name = self.eat(TokenType::Identifier)?.value;
         Ok(Tree::Identifier { name })
     }
-
-    /**
-     * ParanthesizedExpression
-     *  : '(' Expression ')'
-     *  ;
-     */
-    fn paranthesized_expression(&mut self) -> Result<Tree, SyntaxError> {
-        self.eat(TokenType::CircleBracketOpen)?;
-        let expression = self.expression()?;
-        self.eat(TokenType::CircleBracketClose)?;
-        Ok(expression)
-    } 
 
     /**
      * Literal
@@ -398,22 +415,6 @@ impl Parser {
         return Ok(Tree::StringLiteral { value })
     }
 
-    /**
-     * Eats a token and advances the lookahead token.
-     * Throws a Syntax error if lookahead doesn't match supplied token.
-     */
-    fn eat(&mut self, token_type: TokenType) -> Result<Token, SyntaxError> {
-        if self.lookahead.token_type != token_type {
-            return Err(SyntaxError {
-                message: format(format_args!("Unexpected token {:?}, expected {:?}!", self.lookahead.token_type, token_type)),
-            });
-        }
-        
-        // Advance to the next token.
-        let token = self.lookahead.clone();
-        self.lookahead = self.tokenizer.get_next_token()?;
-        Ok(token)
-    }
 }
 
 #[cfg(test)]

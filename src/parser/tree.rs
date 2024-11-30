@@ -2,82 +2,130 @@
 pub enum Tree {
     
     /**
-     * Program {
-     *  body: [...],
-     * }
+     * Program
+     *  : StatementList
+     *  ;
+     * 
+     * StatementList
+     *  : Statement
+     *  | StatementList Statement
+     *  ;
+     * 
+     * Statement
+     *  : EmptyStatement
+     *  | BlockStatement
+     *  | VariableStatement
+     *  | ExpressionStatement
+     *  ;
      */
     Program{ body: Box<Vec<Tree>> },
     
     /**
      * EmptyStatement
+     *  : ';'
+     *  ;
      */
     EmptyStatement,
 
     /**
-     * BlockStatement {
-     *  body: [...],
-     * }
+     * BlockStatement
+     *  : '{' OptStatementList '}'
+     *  ;
      */
     BlockStatement{ body: Box<Vec<Tree>> },
 
     /**
-     * ExpressionStatement {
-     *  expression: ...,
-     * }
-     */
-    ExpressionStatement{ expression: Box<Tree> },
-
-    /**
-     * VariableStatement {
-     *  declarations: [...],
-     * }
+     * VariableStatement
+     *  : 'let' VariableDeclarationList ';'
+     *  ;
+     * 
+     * VariableDeclarationList
+     *  : VariableDeclaration
+     *  | VariableDeclarationList ',' VariableDeclaration
+     *  ;
      */
     VariableStatement{ declarations: Box<Vec<Tree>> },
 
     /**
-     * VariableDeclaration {
-     *  identifier: ...,
-     *  init: ...,
-     * }
+     * VariableDeclaration
+     *  : Identifier OptVariableInitializer
+     *  ;
+     * 
+     * VariableInitializer
+     *  : SIMPLE_ASSIGNMENT_OPERATOR AssignmentExpression
+     *  ;
      */
     VariableDeclaration{ identifier: Box<Tree>, init: Box<Option<Tree>> },
 
     /**
-     * AssignmentExpression {
-     *  operator: ...,
-     *  left: ...,
-     *  right: ...,
-     * }
+     * ExpressionStatement
+     *  : Expression ';'
+     *  ;
+     * 
+     * Expression
+     *  : AssignmentExpression
+     *  ;
+     */
+    ExpressionStatement{ expression: Box<Tree> },
+
+    /**
+     * AssignmentExpression
+     *  : AdditiveExpression
+     *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
+     *  ;
+     * 
+     * LeftHandSideExpression
+     *  : Identifier
+     *  ;
      */
     AssignmentExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
 
     /**
-     * Identifier {
-     *  name: ...,
-     * }
-     */
-    Identifier{ name: String },
-
-    /**
-     * BinaryExpression {
-     *  operator: ...,
-     *  left: ...,
-     *  right: ...,
-     * }
+     * AdditiveExpression
+     *  : MultiplicativeExpression
+     *  | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
+     *  ;
+     * 
+     * MultiplicativeExpression
+     *  : PrimaryExpression
+     *  | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+     *  ;
+     * 
+     * PrimaryExpression
+     *  : Literal
+     *  | ParanthesizedExpression
+     *  | LeftHandSideExpression
+     *  ;
+     * 
+     * Literal
+     *  : NumericLiteral
+     *  | StringLiteral
+     *  ;
+     * 
+     * ParanthesizedExpression
+     *  : '(' Expression ')'
+     *  ;
      */
     BinaryExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
 
     /**
-     * NumericLiteral {
-     *  value: ...,
-     * }
+     * Identifier
+     *  : IDENTIFIER
+     *  ;
+     */
+    Identifier{ name: String },
+
+    /**
+     * NumericLiteral
+     *  : NUMBER
+     *  ;
      */
     NumericLiteral{ value: f64 },
 
     /**
-     * StringLiteral {
-     *  value: ...,
-     * }
+     * StringLiteral
+     *  : STRING
+     *  ;
      */
     StringLiteral{ value: String },
 }
