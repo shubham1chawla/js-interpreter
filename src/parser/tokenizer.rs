@@ -17,6 +17,7 @@ pub enum TokenType {
     CurlyBracketClose,
     CircleBracketOpen,
     CircleBracketClose,
+    Comma,
 
     // ----- OPERATORS -----
     AdditiveOperator,
@@ -26,13 +27,16 @@ pub enum TokenType {
 
     // ----- IDENTIFIERS -----
     Identifier,
+
+    // ----- KEYWORDS -----
+    LetKeyword,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 16] = [
+    const SPEC: [(Option<TokenType>, &str); 18] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -48,6 +52,10 @@ impl TokenType {
         (Some(Self::CurlyBracketClose), r"^(\})"),
         (Some(Self::CircleBracketOpen), r"^(\()"),
         (Some(Self::CircleBracketClose), r"^(\))"),
+        (Some(Self::Comma), r"^(\,)"),
+
+        // ----- KEYWORDS -----
+        (Some(Self::LetKeyword), r"^(\blet\b)"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),
