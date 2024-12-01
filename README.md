@@ -20,6 +20,7 @@ Statement
     : EmptyStatement
     | BlockStatement
     | VariableStatement
+    | IfStatement
     | ExpressionStatement
     ;
 
@@ -46,6 +47,11 @@ VariableDeclaration
     
 VariableInitializer
     : SIMPLE_ASSIGNMENT_OPERATOR AssignmentExpression
+    ;
+
+IfStatement
+    : 'if' '(' Expression ')' Statement
+    | 'if' '(' Expression ')' Statement 'else' Statement
     ;
 
 ExpressionStatement

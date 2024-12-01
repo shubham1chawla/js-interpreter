@@ -30,13 +30,15 @@ pub enum TokenType {
 
     // ----- KEYWORDS -----
     LetKeyword,
+    IfKeyword,
+    ElseKeyword,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 18] = [
+    const SPEC: [(Option<TokenType>, &str); 20] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -56,6 +58,8 @@ impl TokenType {
 
         // ----- KEYWORDS -----
         (Some(Self::LetKeyword), r"^(\blet\b)"),
+        (Some(Self::IfKeyword), r"^(\bif\b)"),
+        (Some(Self::ElseKeyword), r"^(\belse\b)"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),

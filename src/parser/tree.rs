@@ -15,6 +15,7 @@ pub enum Tree {
      *  : EmptyStatement
      *  | BlockStatement
      *  | VariableStatement
+     *  | IfStatement
      *  | ExpressionStatement
      *  ;
      */
@@ -56,6 +57,14 @@ pub enum Tree {
      *  ;
      */
     VariableDeclaration{ identifier: Box<Tree>, init: Box<Option<Tree>> },
+
+    /**
+     * IfStatement
+     *  : 'if' '(' Expression ')' Statement
+     *  | 'if' '(' Expression ')' Statement 'else' Statement
+     *  ;
+     */
+    IfStatement{ test: Box<Tree>, consequent: Box<Tree>, alternate: Box<Option<Tree>> },
 
     /**
      * ExpressionStatement
