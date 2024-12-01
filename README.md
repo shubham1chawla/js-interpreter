@@ -63,12 +63,17 @@ Expression
     ;
 
 AssignmentExpression
-    : AdditiveExpression
+    : RelationalExpression
     | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
     ;
     
 LeftHandSideExpression
     : Identifier
+    ;
+
+RelationalExpression
+    : AdditiveExpression
+    | AdditiveExpression RELATIONAL_OPERATOR RelationalExpression
     ;
 
 AdditiveExpression

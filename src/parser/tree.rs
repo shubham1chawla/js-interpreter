@@ -79,7 +79,7 @@ pub enum Tree {
 
     /**
      * AssignmentExpression
-     *  : AdditiveExpression
+     *  : RelationalExpression
      *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
      * 
@@ -90,6 +90,11 @@ pub enum Tree {
     AssignmentExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
 
     /**
+     * RelationalExpression
+     *  : AdditiveExpression
+     *  | AdditiveExpression RELATIONAL_OPERATOR RelationalExpression
+     *  ;
+     * 
      * AdditiveExpression
      *  : MultiplicativeExpression
      *  | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
