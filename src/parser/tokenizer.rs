@@ -25,6 +25,7 @@ pub enum TokenType {
     RelationalOperator,
     SimpleAssignmentOperator,
     ComplexAssignmentOperator,
+    EqualityOperator,
 
     // ----- IDENTIFIERS -----
     Identifier,
@@ -33,13 +34,16 @@ pub enum TokenType {
     LetKeyword,
     IfKeyword,
     ElseKeyword,
+    TrueKeyword,
+    FalseKeyword,
+    NullKeyword,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 21] = [
+    const SPEC: [(Option<TokenType>, &str); 25] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -61,6 +65,9 @@ impl TokenType {
         (Some(Self::LetKeyword), r"^(\blet\b)"),
         (Some(Self::IfKeyword), r"^(\bif\b)"),
         (Some(Self::ElseKeyword), r"^(\belse\b)"),
+        (Some(Self::TrueKeyword), r"^(\btrue\b)"),
+        (Some(Self::FalseKeyword), r"^(\bfalse\b)"),
+        (Some(Self::NullKeyword), r"^(\bnull\b)"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),
@@ -71,6 +78,9 @@ impl TokenType {
 
         // ----- IDENTIFIERS -----
         (Some(Self::Identifier), r"^(\w+)"),
+
+        // ----- EQUALITY OPERATORS -----
+        (Some(Self::EqualityOperator), r"^([=|!]=)"),
 
         // ----- ASSIGNMENT OPERATORS -----
         (Some(Self::SimpleAssignmentOperator), r"^(=)"),

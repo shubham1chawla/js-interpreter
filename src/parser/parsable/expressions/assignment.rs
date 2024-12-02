@@ -1,12 +1,12 @@
 use eatable::Eatable;
-use relational::RelationalExpressionParsable;
+use equality::EqualityExpressionParsable;
 
 use super::*;
 
 pub trait AssignmentExpressionParsable {
     /**
      * AssignmentExpression
-     *  : RelationalExpression
+     *  : EqualityExpression
      *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
      */
@@ -33,9 +33,9 @@ pub trait AssignmentExpressionParsable {
 
 impl AssignmentExpressionParsable for Parser {
     fn assignment_expression(&mut self) -> Result<Tree, SyntaxError> {
-        let mut left = self.relational_expression()?;
+        let mut left = self.equality_expression()?;
 
-        // Checking if the lookahead token is not of assignment type, then its an AdditiveExpression
+        // Checking if the lookahead token is not of assignment type
         if !self.is_assignment_operator() {
             return Ok(left);
         }
@@ -46,7 +46,7 @@ impl AssignmentExpressionParsable for Parser {
         // Checking if the left hand side expression is valid, aka an identifier
         left = self.check_valid_assignment_target(left)?;
 
-        // Right-recursing to create the AssignmentExpression
+        // Right-recursing to create the remaining expression
         let right = self.assignment_expression()?;
 
         Ok(Tree::AssignmentExpression { 
@@ -228,5 +228,38 @@ mod tests {
             message: String::from("Invalid left-hand side in assignment expression, expected Identifier!"),
         };
         assert_syntax_error(expected, "42 = 42;");
+    }
+
+    #[test]
+    fn test_parse_presidence_assignment_expression() {
+        let expected = Tree::Program {
+            body: Box::new(vec![
+                Tree::VariableStatement {
+                    declarations: Box::new(vec![
+                        Tree::VariableDeclaration {
+                            identifier: Box::new(Tree::Identifier { name: String::from("isSomething") }),
+                            init: Box::new(Some(Tree::BinaryExpression {
+                                operator: String::from("=="),
+                                left: Box::new(Tree::BinaryExpression {
+                                    operator: String::from("<"),
+                                    left: Box::new(Tree::NumericLiteral { value: 50.0 }),
+                                    right: Box::new(Tree::BinaryExpression {
+                                        operator: String::from("+"),
+                                        left: Box::new(Tree::Identifier { name: String::from("value") }),
+                                        right: Box::new(Tree::BinaryExpression {
+                                            operator: String::from("*"),
+                                            left: Box::new(Tree::NumericLiteral { value: 5.0 }),
+                                            right: Box::new(Tree::NumericLiteral { value: 2.0 }),
+                                        }),
+                                    }),
+                                }),
+                                right: Box::new(Tree::BooleanLiteral { value: true }),
+                            })),
+                        },
+                    ]),
+                },
+            ]),
+        };
+        assert_tree(expected, "let isSomething = 50 < value + 5 * 2 == true;");
     }
 }

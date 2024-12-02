@@ -63,12 +63,17 @@ Expression
     ;
 
 AssignmentExpression
-    : RelationalExpression
+    : EqualityExpression
     | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
     ;
     
 LeftHandSideExpression
     : Identifier
+    ;
+
+EqualityExpression
+    : RelationalExpression EQUALITY_OPERATOR EqualityExpression
+    | RelationalExpression
     ;
 
 RelationalExpression
@@ -92,11 +97,6 @@ PrimaryExpression
     | LeftHandSideExpression
     ;
     
-Literal
-    : NumericLiteral
-    | StringLiteral
-    ;
-    
 ParanthesizedExpression
     : '(' Expression ')'
     ;
@@ -105,11 +105,27 @@ Identifier
     : IDENTIFIER
     ;
 
+Literal
+    : NumericLiteral
+    | StringLiteral
+    | BooleanLiteral
+    | NullLiteral
+    ;
+
 NumericLiteral
     : NUMBER
     ;
 
 StringLiteral
     : STRING
+    ;
+
+BooleanLiteral
+    : 'true'
+    | 'false'
+    ;
+
+NullLiteral
+    : 'null'
     ;
 ```
