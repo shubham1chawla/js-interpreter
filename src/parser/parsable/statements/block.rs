@@ -1,3 +1,4 @@
+use eatable::Eatable;
 use list::StatementListParsable;
 
 use super::*;
@@ -25,7 +26,7 @@ impl BlockStatementParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::{assert_syntax_error, assert_tree};
+    use statements::tests::{assert_syntax_error, assert_tree};
 
     use super::*;
 

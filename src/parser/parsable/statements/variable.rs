@@ -1,3 +1,4 @@
+use eatable::Eatable;
 use expressions::assignment::AssignmentExpressionParsable;
 use identifier::IdentifierParsable;
 
@@ -77,7 +78,7 @@ impl VariableStatementParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::{assert_syntax_error, assert_tree};
+    use statements::tests::{assert_syntax_error, assert_tree};
 
     use super::*;
 

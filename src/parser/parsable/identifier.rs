@@ -1,3 +1,5 @@
+use eatable::Eatable;
+
 use super::*;
 
 pub trait IdentifierParsable {

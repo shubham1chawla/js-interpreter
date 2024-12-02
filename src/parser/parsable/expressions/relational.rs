@@ -1,4 +1,5 @@
 use additive::AdditiveExpressionParsable;
+use eatable::Eatable;
 
 use super::*;
 
@@ -39,7 +40,7 @@ impl RelationalExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::assert_tree;
+    use expressions::tests::assert_tree;
 
     use super::*;
 

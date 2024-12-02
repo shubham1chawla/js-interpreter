@@ -1,3 +1,4 @@
+use eatable::Eatable;
 use statements::expression::ExpressionStatementParsable;
 
 use super::*;
@@ -22,7 +23,7 @@ impl ParanthesizedExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::assert_tree;
+    use expressions::tests::assert_tree;
 
     use super::*;
 

@@ -20,7 +20,7 @@ impl ProgramParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::assert_tree;
+    use crate::parser::parsable::tests::assert_tree;
 
     use super::*;
 

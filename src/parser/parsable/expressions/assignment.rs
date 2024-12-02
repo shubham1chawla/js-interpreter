@@ -1,3 +1,4 @@
+use eatable::Eatable;
 use relational::RelationalExpressionParsable;
 
 use super::*;
@@ -81,7 +82,7 @@ impl AssignmentExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::{assert_syntax_error, assert_tree};
+    use expressions::tests::{assert_syntax_error, assert_tree};
 
     use super::*;
 

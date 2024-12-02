@@ -51,7 +51,7 @@ impl StatementListParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::assert_tree;
+    use statements::tests::assert_tree;
 
     use super::*;
 

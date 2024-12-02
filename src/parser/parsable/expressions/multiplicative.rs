@@ -1,3 +1,4 @@
+use eatable::Eatable;
 use primary::PrimaryExpressionParsable;
 
 use super::*;
@@ -39,7 +40,7 @@ impl MultiplicativeExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::assert_tree;
+    use expressions::tests::assert_tree;
 
     use super::*;
 

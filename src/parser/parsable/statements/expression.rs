@@ -1,3 +1,4 @@
+use eatable::Eatable;
 use expressions::assignment::AssignmentExpressionParsable;
 
 use super::*;

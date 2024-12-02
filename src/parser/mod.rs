@@ -1,6 +1,6 @@
 use tokenizer::*;
 use tree::*;
-pub use parsable::Parsable;
+pub use parsable::parsable::Parsable;
 
 mod parsable;
 mod tree;

@@ -1,3 +1,5 @@
+use eatable::Eatable;
+
 use super::*;
 
 pub trait LiteralParsable {
@@ -53,7 +55,7 @@ impl LiteralParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use parsable::tests::{assert_syntax_error, assert_tree};
+    use crate::parser::parsable::tests::{assert_syntax_error, assert_tree};
 
     use super::*;
 
