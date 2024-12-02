@@ -1,4 +1,4 @@
-use expressions::AssignmentExpressionParsable;
+use expressions::assignment::AssignmentExpressionParsable;
 use identifier::IdentifierParsable;
 
 use super::*;
