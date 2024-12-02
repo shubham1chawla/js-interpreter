@@ -1,4 +1,4 @@
-use statements::ExpressionStatementParsable;
+use statements::expression::ExpressionStatementParsable;
 
 use super::*;
 

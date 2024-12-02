@@ -1,4 +1,4 @@
-use statements::StatementListParsable;
+use statements::list::StatementListParsable;
 
 use super::*;
 
