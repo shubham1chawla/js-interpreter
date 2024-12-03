@@ -1,11 +1,11 @@
-use identifier::IdentifierParsable;
+use primary::PrimaryExpressionParsable;
 
 use super::*;
 
 pub trait LeftHandSideExpressionParsable {
     /**
      * LeftHandSideExpression
-     *  : Identifier
+     *  : PrimaryExpression
      *  ;
      */
     fn left_hand_side_expression(&mut self) -> Result<Tree, SyntaxError>;
@@ -13,6 +13,6 @@ pub trait LeftHandSideExpressionParsable {
 
 impl LeftHandSideExpressionParsable for Parser {
     fn left_hand_side_expression(&mut self) -> Result<Tree, SyntaxError> {
-        self.identifier()
+        self.primary_expression()
     }
 }

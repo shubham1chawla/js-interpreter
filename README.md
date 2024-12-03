@@ -66,10 +66,6 @@ AssignmentExpression
     : LogicalOrExpression
     | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
     ;
-    
-LeftHandSideExpression
-    : Identifier
-    ;
 
 LogicalOrExpression
     : LogicalAndExpression
@@ -97,14 +93,24 @@ AdditiveExpression
     ;
     
 MultiplicativeExpression
+    : UnaryExpression
+    | MultiplicativeExpression MULTIPLICATIVE_OPERATOR UnaryExpression
+    ;
+
+UnaryExpression
+    : LeftHandSideExpression
+    | ADDITIVE_OPERATOR UnaryExpression
+    | LOGICAL_NOT UnaryExpression
+    ;
+
+LeftHandSideExpression
     : PrimaryExpression
-    | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
     ;
     
 PrimaryExpression
-    : Literal
-    | ParanthesizedExpression
-    | LeftHandSideExpression
+    : ParanthesizedExpression
+    | Literal
+    | Identifier
     ;
     
 ParanthesizedExpression

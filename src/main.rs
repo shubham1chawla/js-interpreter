@@ -4,7 +4,12 @@ mod parser;
 
 fn main() {
     let content_string = "
-        x > 0 || y < 0 && z == null;
+        let str, x = 0;
+        if (x > 0) {
+            str = 'Hello!';
+        } else {
+            str = 'World!';
+        }
     ";
 
     let mut parser = Parser::new(content_string.to_owned()).unwrap();

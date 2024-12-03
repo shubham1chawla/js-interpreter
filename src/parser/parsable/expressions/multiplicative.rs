@@ -1,31 +1,31 @@
 use eatable::Eatable;
-use primary::PrimaryExpressionParsable;
+use unary::UnaryExpressionParsable;
 
 use super::*;
 
 pub trait MultiplicativeExpressionParsable {
     /**
      * MultiplicativeExpression
-     *  : PrimaryExpression
-     *  | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+     *  : UnaryExpression
+     *  | MultiplicativeExpression MULTIPLICATIVE_OPERATOR UnaryExpression
      *  ;
      * 
-     * NOTE: Since PrimaryExpression has higher presidence over MultiplicativeExpression
-     * the left and right sub-tree of MultiplicativeExpression looks for a PrimaryExpression.
+     * NOTE: Since UnaryExpression has higher presidence over MultiplicativeExpression
+     * the left and right sub-tree of MultiplicativeExpression looks for a UnaryExpression.
      */
     fn multiplicative_expression(&mut self) -> Result<Tree, SyntaxError>;
 }
 
 impl MultiplicativeExpressionParsable for Parser {
     fn multiplicative_expression(&mut self) -> Result<Tree, SyntaxError> {
-        let mut left = self.primary_expression()?;
+        let mut left = self.unary_expression()?;
 
         while self.lookahead.token_type == TokenType::MultiplicativeOperator {
             // Operator: *, /
             let operator = self.eat(TokenType::MultiplicativeOperator)?.value;
 
             // Extracting the right literal
-            let right = self.primary_expression()?;
+            let right = self.unary_expression()?;
             
             // Enforcing left associativity
             left = Tree::BinaryExpression { 

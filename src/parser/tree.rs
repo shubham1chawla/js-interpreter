@@ -82,10 +82,6 @@ pub enum Tree {
      *  : LogicalOrExpression
      *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
-     * 
-     * LeftHandSideExpression
-     *  : Identifier
-     *  ;
      */
     AssignmentExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
 
@@ -119,26 +115,39 @@ pub enum Tree {
      *  ;
      * 
      * MultiplicativeExpression
+     *  : UnaryExpression
+     *  | MultiplicativeExpression MULTIPLICATIVE_OPERATOR UnaryExpression
+     *  ;
+     */
+    BinaryExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
+
+    /**
+     * UnaryExpression
+     *  : LeftHandSideExpression
+     *  | ADDITIVE_OPERATOR UnaryExpression
+     *  | LOGICAL_NOT UnaryExpression
+     *  ;
+     * 
+     * LeftHandSideExpression
      *  : PrimaryExpression
-     *  | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
      *  ;
      * 
      * PrimaryExpression
-     *  : Literal
-     *  | ParanthesizedExpression
-     *  | LeftHandSideExpression
+     *  : ParanthesizedExpression
+     *  | Literal
+     *  | Identifier
+     *  ;
+     * 
+     * ParanthesizedExpression
+     *  : '(' Expression ')'
      *  ;
      * 
      * Literal
      *  : NumericLiteral
      *  | StringLiteral
      *  ;
-     * 
-     * ParanthesizedExpression
-     *  : '(' Expression ')'
-     *  ;
      */
-    BinaryExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
+    UnaryExpression{ operator: String, argument: Box<Tree> },
 
     /**
      * Identifier

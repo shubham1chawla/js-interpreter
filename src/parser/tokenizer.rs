@@ -28,6 +28,7 @@ pub enum TokenType {
     EqualityOperator,
     LogicalAndOperator,
     LogicalOrOperator,
+    LogicalNotOperator,
 
     // ----- IDENTIFIERS -----
     Identifier,
@@ -45,7 +46,7 @@ impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 27] = [
+    const SPEC: [(Option<TokenType>, &str); 28] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -81,12 +82,13 @@ impl TokenType {
         // ----- IDENTIFIERS -----
         (Some(Self::Identifier), r"^(\w+)"),
 
+        // ----- EQUALITY OPERATORS -----
+        (Some(Self::EqualityOperator), r"^([=|!]=)"),
+
         // ----- LOGICAL OPERATORS -----
         (Some(Self::LogicalAndOperator), r"^(&&)"),
         (Some(Self::LogicalOrOperator), r"^(\|\|)"),
-
-        // ----- EQUALITY OPERATORS -----
-        (Some(Self::EqualityOperator), r"^([=|!]=)"),
+        (Some(Self::LogicalNotOperator), r"^(!)"),
 
         // ----- ASSIGNMENT OPERATORS -----
         (Some(Self::SimpleAssignmentOperator), r"^(=)"),
