@@ -79,7 +79,7 @@ pub enum Tree {
 
     /**
      * AssignmentExpression
-     *  : EqualityExpression
+     *  : LogicalOrExpression
      *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
      * 
@@ -88,6 +88,19 @@ pub enum Tree {
      *  ;
      */
     AssignmentExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
+
+    /**
+     * LogicalOrExpression
+     *  : LogicalAndExpression
+     *  | LogicalAndExpression '||' LogicalAndExpression
+     *  ;
+     * 
+     * LogicalAndExpression
+     *  : EqualityExpression
+     *  | EqualityExpression '&&' EqualityExpression
+     *  ;
+     */
+    LogicalExpression{ operator: String, left: Box<Tree>, right: Box<Tree> },
 
     /**
      * EqualityExpression

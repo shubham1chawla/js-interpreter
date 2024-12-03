@@ -63,12 +63,22 @@ Expression
     ;
 
 AssignmentExpression
-    : EqualityExpression
+    : LogicalOrExpression
     | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
     ;
     
 LeftHandSideExpression
     : Identifier
+    ;
+
+LogicalOrExpression
+    : LogicalAndExpression
+    | LogicalAndExpression '||' LogicalAndExpression
+    ;
+
+LogicalAndExpression
+    : EqualityExpression
+    | EqualityExpression '&&' EqualityExpression
     ;
 
 EqualityExpression

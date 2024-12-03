@@ -1,12 +1,12 @@
 use eatable::Eatable;
-use equality::EqualityExpressionParsable;
+use logical::LogicalExpressionParsable;
 
 use super::*;
 
 pub trait AssignmentExpressionParsable {
     /**
      * AssignmentExpression
-     *  : EqualityExpression
+     *  : LogicalOrExpression
      *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
      */
@@ -33,7 +33,7 @@ pub trait AssignmentExpressionParsable {
 
 impl AssignmentExpressionParsable for Parser {
     fn assignment_expression(&mut self) -> Result<Tree, SyntaxError> {
-        let mut left = self.equality_expression()?;
+        let mut left = self.logical_or_expression()?;
 
         // Checking if the lookahead token is not of assignment type
         if !self.is_assignment_operator() {
