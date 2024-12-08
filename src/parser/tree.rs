@@ -12,14 +12,28 @@ pub enum Tree {
      *  ;
      * 
      * Statement
-     *  : EmptyStatement
+     *  : IterationStatement
+     *  | EmptyStatement
      *  | BlockStatement
      *  | VariableStatement
      *  | IfStatement
      *  | ExpressionStatement
      *  ;
+     * 
+     * IterationStatement
+     *  : WhileStatement
+     *  | DoWhileStatement
+     *  | ForStatement
+     *  ;
      */
     Program{ body: Box<Vec<Tree>> },
+
+    /**
+     * WhileStatement
+     *  : 'while' '(' Expression ')' Statement
+     *  ;
+     */
+    WhileStatement{ test: Box<Tree>, body: Box<Tree> },
     
     /**
      * EmptyStatement

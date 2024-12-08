@@ -40,13 +40,16 @@ pub enum TokenType {
     TrueKeyword,
     FalseKeyword,
     NullKeyword,
+    WhileKeyword,
+    DoKeyword,
+    ForKeyword,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 28] = [
+    const SPEC: [(Option<TokenType>, &str); 31] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -71,6 +74,9 @@ impl TokenType {
         (Some(Self::TrueKeyword), r"^(\btrue\b)"),
         (Some(Self::FalseKeyword), r"^(\bfalse\b)"),
         (Some(Self::NullKeyword), r"^(\bnull\b)"),
+        (Some(Self::WhileKeyword), r"^(\bwhile\b)"),
+        (Some(Self::DoKeyword), r"^(\bdo\b)"),
+        (Some(Self::ForKeyword), r"^(\bfor\b)"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),

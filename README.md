@@ -24,6 +24,16 @@ Statement
     | ExpressionStatement
     ;
 
+IterationStatement
+    : WhileStatement
+    | DoWhileStatement
+    | ForStatement
+    ;
+
+WhileStatement
+    : 'while' '(' Expression ')' Statement
+    ;
+
 EmptyStatement
     : ';'
     ;
