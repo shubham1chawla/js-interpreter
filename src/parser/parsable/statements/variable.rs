@@ -7,10 +7,17 @@ use super::*;
 pub trait VariableStatementParsable {
     /**
      * VariableStatement
-     *  : 'let' VariableDeclarationList ';'
+     *  : VariableStatementInit ';'
      *  ;
      */
     fn variable_statement(&mut self) -> Result<Tree, SyntaxError>;
+
+    /**
+     * VariableStatementInit
+     *  : 'let' VariableDeclarationList
+     *  ;
+     */
+    fn variable_statement_init(&mut self) -> Result<Tree, SyntaxError>;
 
     /**
      * VariableDeclarationList
@@ -37,9 +44,14 @@ pub trait VariableStatementParsable {
 
 impl VariableStatementParsable for Parser {
     fn variable_statement(&mut self) -> Result<Tree, SyntaxError> {
+        let statement = self.variable_statement_init()?;
+        self.eat(TokenType::SemiColon)?;
+        Ok(statement)
+    }
+
+    fn variable_statement_init(&mut self) -> Result<Tree, SyntaxError> {
         self.eat(TokenType::LetKeyword)?;
         let declarations = self.variable_declaration_list()?;
-        self.eat(TokenType::SemiColon)?;
         Ok(Tree::VariableStatement { declarations: Box::new(declarations) })
     }
 

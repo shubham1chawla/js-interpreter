@@ -38,6 +38,15 @@ DoWhileStatement
     : 'do' Statement '(' Expression ')' ';'
     ;
 
+ForStatement
+    : 'for' '(' OptForStatementInit ';' OptExpression ';' OptExpression ')' Statement
+    ;
+    
+ForStatementInit
+    : VariableStatementInit
+    | Expression
+    ;
+
 EmptyStatement
     : ';'
     ;
@@ -47,7 +56,11 @@ BlockStatement
     ;
 
 VariableStatement
-    : 'let' VariableDeclarationList ';'
+    : VariableStatementInit ';'
+    ;
+
+VariableStatementInit
+    : 'let' VariableDeclarationList
     ;
     
 VariableDeclarationList

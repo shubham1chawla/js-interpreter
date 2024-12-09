@@ -41,6 +41,18 @@ pub enum Tree {
      *  ;
      */
     DoWhileStatement{ body: Box<Tree>, test: Box<Tree> },
+
+    /**
+     * ForStatement
+     *  : 'for' '(' OptForStatementInit ';' OptExpression ';' OptExpression ')' Statement
+     *  ;
+     * 
+     * ForStatementInit
+     *  : VariableStatementInit
+     *  | Expression
+     *  ;
+     */
+    ForStatement{ init: Box<Option<Tree>>, test: Box<Option<Tree>>, update: Box<Option<Tree>>, body: Box<Tree> },
     
     /**
      * EmptyStatement
@@ -58,7 +70,11 @@ pub enum Tree {
 
     /**
      * VariableStatement
-     *  : 'let' VariableDeclarationList ';'
+     *  : VariableStatementInit ';'
+     *  ;
+     * 
+     * VariableStatementInit
+     *  : 'let' VariableDeclarationList
      *  ;
      * 
      * VariableDeclarationList

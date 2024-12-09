@@ -4,7 +4,7 @@ mod parser;
 
 fn main() {
     let content_string = "
-        do x += 1; while (x < 42);
+        for (let i=0, x = y; i<10; i+=1) {}
     ";
 
     let mut parser = Parser::new(content_string.to_owned()).unwrap();
