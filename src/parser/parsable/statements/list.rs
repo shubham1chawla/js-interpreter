@@ -1,7 +1,7 @@
 use block::BlockStatementParsable;
 use empty::EmptyStatementParsable;
 use expression::ExpressionStatementParsable;
-use ifconditional::IfStatementParsable;
+use conditional::IfStatementParsable;
 use iteration::IterationStatementParsable;
 use variable::VariableStatementParsable;
 

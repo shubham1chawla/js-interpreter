@@ -34,6 +34,10 @@ WhileStatement
     : 'while' '(' Expression ')' Statement
     ;
 
+DoWhileStatement
+    : 'do' Statement '(' Expression ')' ';'
+    ;
+
 EmptyStatement
     : ';'
     ;

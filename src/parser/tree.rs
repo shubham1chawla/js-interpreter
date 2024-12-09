@@ -34,6 +34,13 @@ pub enum Tree {
      *  ;
      */
     WhileStatement{ test: Box<Tree>, body: Box<Tree> },
+
+    /**
+     * DoWhileStatement
+     *  : 'do' Statement '(' Expression ')' ';'
+     *  ;
+     */
+    DoWhileStatement{ body: Box<Tree>, test: Box<Tree> },
     
     /**
      * EmptyStatement
