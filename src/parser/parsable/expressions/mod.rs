@@ -5,6 +5,7 @@ pub mod assignment;
 mod equality;
 mod lhs;
 mod logical;
+mod member;
 mod multiplicative;
 mod paranthesized;
 mod primary;

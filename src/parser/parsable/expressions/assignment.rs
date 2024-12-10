@@ -64,12 +64,12 @@ impl AssignmentExpressionParsable for Parser {
     }
 
     fn check_valid_assignment_target(&mut self, node: Tree) -> Result<Tree, SyntaxError> {
-        if let Tree::Identifier {..} = node {
-            return Ok(node);
+        match node {
+            Tree::Identifier {..} | Tree::MemberExpression {..} => Ok(node),
+            _ => Err(SyntaxError {
+                message: String::from("Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!"),
+            })
         }
-        Err(SyntaxError {
-            message: String::from("Invalid left-hand side in assignment expression, expected Identifier!"),
-        })
     }
 
     fn assignment_operator(&mut self) -> Result<Token, SyntaxError> {
@@ -225,7 +225,7 @@ mod tests {
     #[test]
     fn test_parse_invalid_assignment_expression() {
         let expected = SyntaxError {
-            message: String::from("Invalid left-hand side in assignment expression, expected Identifier!"),
+            message: String::from("Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!"),
         };
         assert_syntax_error(expected, "42 = 42;");
     }

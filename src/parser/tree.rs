@@ -185,7 +185,16 @@ pub enum Tree {
      *  ;
      * 
      * LeftHandSideExpression
+     *  : MemberExpression
+     *  ;
+     */
+    UnaryExpression{ operator: String, argument: Box<Tree> },
+
+    /**
+     * MemberExpression
      *  : PrimaryExpression
+     *  | MemberExpression '.' Identifier
+     *  | MemberExpression '[' Expression ']'
      *  ;
      * 
      * PrimaryExpression
@@ -203,7 +212,7 @@ pub enum Tree {
      *  | StringLiteral
      *  ;
      */
-    UnaryExpression{ operator: String, argument: Box<Tree> },
+    MemberExpression{ object: Box<Tree>, property: Box<Tree>, computed: bool },
 
     /**
      * Identifier

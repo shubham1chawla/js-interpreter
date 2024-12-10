@@ -144,7 +144,13 @@ UnaryExpression
     ;
 
 LeftHandSideExpression
+    : MemberExpression
+    ;
+
+MemberExpression
     : PrimaryExpression
+    | MemberExpression '.' Identifier
+    | MemberExpression '[' Expression ']'
     ;
 
 PrimaryExpression

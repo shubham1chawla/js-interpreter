@@ -4,7 +4,10 @@ mod parser;
 
 fn main() {
     let content_string = "
-        function multiply(x, y) { return x * y; }
+        x.y;
+        x.y = 1;
+        x[0] = 1;
+        a.b.c['d'];
     ";
 
     let mut parser = Parser::new(content_string.to_owned()).unwrap();
