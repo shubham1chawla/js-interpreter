@@ -2,6 +2,7 @@ use block::BlockStatementParsable;
 use empty::EmptyStatementParsable;
 use expression::ExpressionStatementParsable;
 use conditional::IfStatementParsable;
+use function::FunctionDeclarationParsable;
 use iteration::IterationStatementParsable;
 use variable::VariableStatementParsable;
 
@@ -49,6 +50,8 @@ impl StatementListParsable for Parser {
     fn statement(&mut self) -> Result<Tree, SyntaxError> {
         match self.lookahead.token_type {
             TokenType::WhileKeyword | TokenType::DoKeyword | TokenType::ForKeyword => self.iteration_statement(),
+            TokenType::FunctionKeyword => self.function_declaration(),
+            TokenType::ReturnKeyword => self.return_statement(),
             TokenType::SemiColon => self.empty_statement(),
             TokenType::CurlyBracketOpen => self.block_statement(),
             TokenType::LetKeyword => self.variable_statement(),

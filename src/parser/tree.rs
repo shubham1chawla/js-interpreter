@@ -53,6 +53,25 @@ pub enum Tree {
      *  ;
      */
     ForStatement{ init: Box<Option<Tree>>, test: Box<Option<Tree>>, update: Box<Option<Tree>>, body: Box<Tree> },
+
+    /**
+     * FunctionDeclaration
+     *  : 'function' Identifier '(' OptFormalParameterList ')' BlockStatement
+     *  ;
+     * 
+     * FormalParameterList
+     *  : Identifier
+     *  | FormalParameterList ',' Identifier
+     *  ;
+     */
+    FunctionDeclaration{ identifier: Box<Tree>, params: Box<Vec<Tree>>, body: Box<Tree> },
+
+    /**
+     * ReturnStatement
+     *  : 'return' OptExpression ';'
+     *  ;
+     */
+    ReturnStatement{ argument: Box<Option<Tree>> },
     
     /**
      * EmptyStatement

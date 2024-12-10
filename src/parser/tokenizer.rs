@@ -43,13 +43,15 @@ pub enum TokenType {
     WhileKeyword,
     DoKeyword,
     ForKeyword,
+    FunctionKeyword,
+    ReturnKeyword,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 31] = [
+    const SPEC: [(Option<TokenType>, &str); 33] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -77,6 +79,8 @@ impl TokenType {
         (Some(Self::WhileKeyword), r"^(\bwhile\b)"),
         (Some(Self::DoKeyword), r"^(\bdo\b)"),
         (Some(Self::ForKeyword), r"^(\bfor\b)"),
+        (Some(Self::FunctionKeyword), r"^(\bfunction\b)"),
+        (Some(Self::ReturnKeyword), r"^(\breturn\b)"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),

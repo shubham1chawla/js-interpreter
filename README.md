@@ -10,7 +10,7 @@ The following snippets highlight the grammar production rules based on [Backusâ€
 Program
     : StatementList
     ;
-    
+
 StatementList
     : Statement
     | StatementList Statement
@@ -41,16 +41,29 @@ DoWhileStatement
 ForStatement
     : 'for' '(' OptForStatementInit ';' OptExpression ';' OptExpression ')' Statement
     ;
-    
+
 ForStatementInit
     : VariableStatementInit
     | Expression
     ;
 
+FunctionDeclaration
+    : 'function' Identifier '(' OptFormalParameterList ')' BlockStatement
+    ;
+
+FormalParameterList
+    : Identifier
+    | FormalParameterList ',' Identifier
+    ;
+
+ReturnStatement
+    : 'return' OptExpression ';'
+    ;
+
 EmptyStatement
     : ';'
     ;
-    
+
 BlockStatement
     : '{' OptStatementList '}'
     ;
@@ -62,7 +75,7 @@ VariableStatement
 VariableStatementInit
     : 'let' VariableDeclarationList
     ;
-    
+
 VariableDeclarationList
     : VariableDeclaration
     | VariableDeclarationList ',' VariableDeclaration
@@ -71,7 +84,7 @@ VariableDeclarationList
 VariableDeclaration
     : Identifier OptVariableInitializer
     ;
-    
+
 VariableInitializer
     : SIMPLE_ASSIGNMENT_OPERATOR AssignmentExpression
     ;
@@ -84,7 +97,7 @@ IfStatement
 ExpressionStatement
     : Expression ';'
     ;
-    
+
 Expression
     : AssignmentExpression
     ;
@@ -118,7 +131,7 @@ AdditiveExpression
     : MultiplicativeExpression
     | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
     ;
-    
+
 MultiplicativeExpression
     : UnaryExpression
     | MultiplicativeExpression MULTIPLICATIVE_OPERATOR UnaryExpression
@@ -133,13 +146,13 @@ UnaryExpression
 LeftHandSideExpression
     : PrimaryExpression
     ;
-    
+
 PrimaryExpression
     : ParanthesizedExpression
     | Literal
     | Identifier
     ;
-    
+
 ParanthesizedExpression
     : '(' Expression ')'
     ;
