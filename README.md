@@ -144,7 +144,30 @@ UnaryExpression
     ;
 
 LeftHandSideExpression
+    : CallMemberExpression
+    ;
+
+CallMemberExpression
     : MemberExpression
+    | CallExpression
+    ;
+
+CallExpression
+    : Callee Arguments
+    ;
+
+Callee
+    : MemberExpression
+    | CallExpression
+    ;
+
+Arguments
+    : '(' OptArgumentList ')'
+    ;
+
+ArgumentList
+    : AssignmentExpression
+    | ArgumentList ',' AssignmentExpression
     ;
 
 MemberExpression

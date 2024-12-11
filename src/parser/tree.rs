@@ -185,10 +185,36 @@ pub enum Tree {
      *  ;
      * 
      * LeftHandSideExpression
-     *  : MemberExpression
+     *  : CallMemberExpression
      *  ;
      */
     UnaryExpression{ operator: String, argument: Box<Tree> },
+
+    /**
+     * CallMemberExpression
+     *  : MemberExpression
+     *  | CallExpression
+     *  ;
+     * 
+     * CallExpression
+     *  : Callee Arguments
+     *  ;
+     * 
+     * Callee
+     *  : MemberExpression
+     *  | CallExpression
+     *  ;
+     * 
+     * Arguments
+     *  : '(' OptArgumentList ')'
+     *  ;
+     * 
+     * ArgumentList
+     *  : AssignmentExpression
+     *  | ArgumentList ',' AssignmentExpression
+     *  ;
+     */
+    CallExpression{ callee: Box<Tree>, arguments: Box<Vec<Tree>> },
 
     /**
      * MemberExpression

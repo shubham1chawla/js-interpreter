@@ -1,11 +1,11 @@
-use member::MemberExpressionParsable;
+use call::CallExpressionParsable;
 
 use super::*;
 
 pub trait LeftHandSideExpressionParsable {
     /**
      * LeftHandSideExpression
-     *  : MemberExpression
+     *  : CallMemberExpression
      *  ;
      */
     fn left_hand_side_expression(&mut self) -> Result<Tree, SyntaxError>;
@@ -13,6 +13,6 @@ pub trait LeftHandSideExpressionParsable {
 
 impl LeftHandSideExpressionParsable for Parser {
     fn left_hand_side_expression(&mut self) -> Result<Tree, SyntaxError> {
-        self.member_expression()
+        self.call_member_expression()
     }
 }

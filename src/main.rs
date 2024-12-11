@@ -4,10 +4,9 @@ mod parser;
 
 fn main() {
     let content_string = "
-        x.y;
-        x.y = 1;
-        x[0] = 1;
-        a.b.c['d'];
+        foo(x);
+        foo(x)();
+        console.log(x, y);
     ";
 
     let mut parser = Parser::new(content_string.to_owned()).unwrap();
