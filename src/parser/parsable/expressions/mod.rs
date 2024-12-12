@@ -4,6 +4,7 @@ mod additive;
 pub mod assignment;
 mod call;
 mod equality;
+pub mod function;
 mod lhs;
 mod logical;
 mod member;

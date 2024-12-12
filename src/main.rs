@@ -4,9 +4,7 @@ mod parser;
 
 fn main() {
     let content_string = "
-        foo(x);
-        foo(x)();
-        console.log(x, y);
+        function() {};
     ";
 
     let mut parser = Parser::new(content_string.to_owned()).unwrap();

@@ -178,12 +178,17 @@ MemberExpression
 
 PrimaryExpression
     : ParanthesizedExpression
+    | FunctionExpression
     | Literal
     | Identifier
     ;
 
 ParanthesizedExpression
     : '(' Expression ')'
+    ;
+
+FunctionExpression
+    : 'function' OptIdentifier '(' OptFormalParameterList ')' BlockStatement
     ;
 
 Identifier

@@ -1,10 +1,10 @@
 use super::*;
 
-mod block;
+pub mod block;
 mod conditional;
 mod empty;
 pub mod expression;
-mod function;
+pub mod function;
 mod iteration;
 pub mod list;
 mod variable;

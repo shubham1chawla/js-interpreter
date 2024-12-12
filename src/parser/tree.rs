@@ -225,6 +225,7 @@ pub enum Tree {
      * 
      * PrimaryExpression
      *  : ParanthesizedExpression
+     *  | FunctionExpression
      *  | Literal
      *  | Identifier
      *  ;
@@ -239,6 +240,13 @@ pub enum Tree {
      *  ;
      */
     MemberExpression{ object: Box<Tree>, property: Box<Tree>, computed: bool },
+
+    /**
+     * FunctionExpression
+     *  : 'function' OptIdentifier '(' OptFormalParameterList ')' BlockStatement
+     *  ;
+     */
+    FunctionExpression{ identifier: Box<Option<Tree>>, params: Box<Vec<Tree>>, body: Box<Tree> },
 
     /**
      * Identifier
