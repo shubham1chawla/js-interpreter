@@ -1,6 +1,5 @@
 #[derive(Debug, PartialEq)]
 pub enum Tree {
-    
     /**
      * Program
      *  : StatementList
@@ -13,10 +12,13 @@ pub enum Tree {
      * 
      * Statement
      *  : IterationStatement
+     *  | FunctionDeclaration
+     *  | ReturnKeyword
      *  | EmptyStatement
      *  | BlockStatement
      *  | VariableStatement
      *  | IfStatement
+     *  | ClassDeclaration
      *  | ExpressionStatement
      *  ;
      * 
@@ -123,6 +125,76 @@ pub enum Tree {
     IfStatement{ test: Box<Tree>, consequent: Box<Tree>, alternate: Box<Option<Tree>> },
 
     /**
+     * ClassDeclaration
+     *  : 'class' Identifier OptClassExtends ClassBody
+     *  ;
+     * 
+     * ClassExtends
+     *  : 'extends' Identifier
+     *  ;
+     */
+    ClassDeclaration{ idenifier: Box<Tree>, body: Box<Tree>, super_class: Box<Option<Tree>> },
+
+    /**
+     * ClassBody
+     *  : '{' OptClassStatementList '}'
+     *  ;
+     * 
+     * ClassStatementList
+     *  : ClassStatement
+     *  | ClassStatementList ClassStatement
+     *  ;
+     * 
+     * ClassStatement
+     *  : ConstructorDefinition
+     *  | GetterDefinition
+     *  | SetterDefinition
+     *  | MethodDefinition
+     *  | PropertyDefinition
+     *  ;
+     */
+    ClassBody{ body: Box<Vec<Tree>> },
+
+    /**
+     * ConstructorDefinition
+     *  : 'constructor' '(' OptFormalParameterList ')' BlockStatement
+     *  ;
+     */
+    ConstructorDefinition{ value: Box<Tree> },
+
+    /**
+     * GetterDefinition
+     *  : 'get' Identifier '(' ')' BlockStatement
+     *  ;
+     */
+    GetterDefinition{ key: Box<Tree>, value: Box<Tree> },
+
+    /**
+     * SetterDefinition
+     *  : 'set' Identifier '(' Identifier ')' BlockStatement 
+     *  ;
+     */
+    SetterDefinition{ key: Box<Tree>, value: Box<Tree> },
+
+    /**
+     * MethodDefinition
+     *  : Identifier '(' OptFormalParameterList ')' BlockStatement
+     *  ;
+     */
+    MethodDefinition{ key: Box<Tree>, value: Box<Tree> },
+
+    /**
+     * PropertyDefinition
+     *  : Identifier OptPropertyInitializer ';'
+     *  ;
+     * 
+     * PropertyInitializer
+     *  : SIMPLE_ASSIGNMENT_OPERATOR AssignmentExpression
+     *  ;
+     */
+    PropertyDefinition{ key: Box<Tree>, value: Box<Option<Tree>> },
+
+    /**
      * ExpressionStatement
      *  : Expression ';'
      *  ;
@@ -226,6 +298,7 @@ pub enum Tree {
      * PrimaryExpression
      *  : ParanthesizedExpression
      *  | FunctionExpression
+     *  | NewExpression
      *  | Literal
      *  | Identifier
      *  ;
@@ -237,6 +310,10 @@ pub enum Tree {
      * Literal
      *  : NumericLiteral
      *  | StringLiteral
+     *  | BooleanLiteral
+     *  | NullLiteral
+     *  | ThisLiteral
+     *  | SuperLiteral
      *  ;
      */
     MemberExpression{ object: Box<Tree>, property: Box<Tree>, computed: bool },
@@ -249,11 +326,11 @@ pub enum Tree {
     FunctionExpression{ identifier: Box<Option<Tree>>, params: Box<Vec<Tree>>, body: Box<Tree> },
 
     /**
-     * Identifier
-     *  : IDENTIFIER
+     * NewExpression
+     *  : 'new' MemberExpression Arguments
      *  ;
      */
-    Identifier{ name: String },
+    NewExpression{ callee: Box<Tree>, arguments: Box<Vec<Tree>> },
 
     /**
      * NumericLiteral
@@ -283,4 +360,25 @@ pub enum Tree {
      *  ;
      */
     NullLiteral,
+
+    /**
+     * ThisLiteral
+     *  : 'this'
+     *  ;
+     */
+    ThisLiteral,
+
+    /**
+     * SuperLiteral
+     *  : 'super'
+     *  ;
+     */
+    SuperLiteral,
+
+    /**
+     * Identifier
+     *  : IDENTIFIER
+     *  ;
+     */
+    Identifier{ name: String },
 }

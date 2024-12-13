@@ -1,6 +1,7 @@
 use function::FunctionExpressionParsable;
 use identifier::IdentifierParsable;
 use literal::LiteralParsable;
+use new::NewExpressionParsable;
 use paranthesized::ParanthesizedExpressionParsable;
 
 use super::*;
@@ -10,6 +11,7 @@ pub trait PrimaryExpressionParsable {
      * PrimaryExpression
      *  : ParanthesizedExpression
      *  | FunctionExpression
+     *  | NewExpression
      *  | Literal
      *  | Identifier
      *  ;
@@ -22,7 +24,14 @@ impl PrimaryExpressionParsable for Parser {
         match self.lookahead.token_type {
             TokenType::CircleBracketOpen => self.paranthesized_expression(),
             TokenType::FunctionKeyword => self.function_expression(),
-            TokenType::Number | TokenType::String | TokenType::TrueKeyword | TokenType::FalseKeyword | TokenType::NullKeyword => self.literal(),
+            TokenType::NewKeyword => self.new_expression(),
+            TokenType::Number 
+            | TokenType::String 
+            | TokenType::TrueKeyword 
+            | TokenType::FalseKeyword 
+            | TokenType::NullKeyword 
+            | TokenType::ThisKeyword 
+            | TokenType::SuperKeyword => self.literal(),
             _ => self.identifier(),
         }
     }

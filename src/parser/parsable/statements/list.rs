@@ -1,4 +1,5 @@
 use block::BlockStatementParsable;
+use class::ClassDeclarationParsable;
 use empty::EmptyStatementParsable;
 use expression::ExpressionStatementParsable;
 use conditional::IfStatementParsable;
@@ -20,10 +21,13 @@ pub trait StatementListParsable {
     /**
      * Statement
      *  : IterationStatement
+     *  | FunctionDeclaration
+     *  | ReturnKeyword
      *  | EmptyStatement
      *  | BlockStatement
      *  | VariableStatement
      *  | IfStatement
+     *  | ClassDeclaration
      *  | ExpressionStatement
      *  ;
      * 
@@ -56,6 +60,7 @@ impl StatementListParsable for Parser {
             TokenType::CurlyBracketOpen => self.block_statement(),
             TokenType::LetKeyword => self.variable_statement(),
             TokenType::IfKeyword => self.if_statement(),
+            TokenType::ClassKeyword => self.class_delaration(),
             _ => self.expression_statement(),
         }
     }

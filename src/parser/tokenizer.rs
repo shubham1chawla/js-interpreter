@@ -48,13 +48,21 @@ pub enum TokenType {
     ForKeyword,
     FunctionKeyword,
     ReturnKeyword,
+    ClassKeyword,
+    ExtendsKeyword,
+    ConstructorKeyword,
+    GetKeyword,
+    SetKeyword,
+    ThisKeyword,
+    SuperKeyword,
+    NewKeyword,
 }
 
 impl TokenType {
     /**
      * Tokenizer spec.
      */
-    const SPEC: [(Option<TokenType>, &str); 36] = [
+    const SPEC: [(Option<TokenType>, &str); 44] = [
         // ----- WHITESPACES -----
         (None, r"^\s+"),
 
@@ -87,6 +95,14 @@ impl TokenType {
         (Some(Self::ForKeyword), r"^(\bfor\b)"),
         (Some(Self::FunctionKeyword), r"^(\bfunction\b)"),
         (Some(Self::ReturnKeyword), r"^(\breturn\b)"),
+        (Some(Self::ClassKeyword), r"^(\bclass\b)"),
+        (Some(Self::ExtendsKeyword), r"^(\bextends\b)"),
+        (Some(Self::ConstructorKeyword), r"^(\bconstructor\b)"),
+        (Some(Self::GetKeyword), r"^(\bget\b)"),
+        (Some(Self::SetKeyword), r"^(\bset\b)"),
+        (Some(Self::ThisKeyword), r"^(\bthis\b)"),
+        (Some(Self::SuperKeyword), r"^(\bsuper\b)"),
+        (Some(Self::NewKeyword), r"^(\bnew\b)"),
 
         // ----- NUMBERS -----
         (Some(Self::Number), r"^(\d+)"),

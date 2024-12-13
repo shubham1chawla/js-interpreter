@@ -17,10 +17,14 @@ StatementList
     ;
 
 Statement
-    : EmptyStatement
+    : IterationStatement
+    | FunctionDeclaration
+    | ReturnKeyword
+    | EmptyStatement
     | BlockStatement
     | VariableStatement
     | IfStatement
+    | ClassDeclaration
     | ExpressionStatement
     ;
 
@@ -92,6 +96,55 @@ VariableInitializer
 IfStatement
     : 'if' '(' Expression ')' Statement
     | 'if' '(' Expression ')' Statement 'else' Statement
+    ;
+
+ClassDeclaration
+    : 'class' Identifier OptClassExtends ClassBody
+    ;
+
+ClassExtends
+    : 'extends' Identifier
+    ;
+
+ClassBody
+    : '{' OptClassStatementList '}'
+    ;
+
+ClassStatementList
+    : ClassStatement
+    | ClassStatementList ClassStatement
+    ;
+
+ClassStatement
+    : ConstructorDefinition
+    | GetterDefinition
+    | SetterDefinition
+    | MethodDefinition
+    | PropertyDefinition
+    ;
+
+ConstructorDefinition
+    : 'constructor' '(' OptFormalParameterList ')' BlockStatement
+    ;
+
+GetterDefinition
+    : 'get' Identifier '(' ')' BlockStatement
+    ;
+
+SetterDefinition
+    : 'set' Identifier '(' Identifier ')' BlockStatement 
+    ;
+
+MethodDefinition
+    : Identifier '(' OptFormalParameterList ')' BlockStatement
+    ;
+
+PropertyDefinition
+    : Identifier OptPropertyInitializer ';'
+    ;
+
+PropertyInitializer
+    : SIMPLE_ASSIGNMENT_OPERATOR AssignmentExpression
     ;
 
 ExpressionStatement
@@ -179,6 +232,7 @@ MemberExpression
 PrimaryExpression
     : ParanthesizedExpression
     | FunctionExpression
+    | NewExpression
     | Literal
     | Identifier
     ;
@@ -191,8 +245,8 @@ FunctionExpression
     : 'function' OptIdentifier '(' OptFormalParameterList ')' BlockStatement
     ;
 
-Identifier
-    : IDENTIFIER
+NewExpression
+    : 'new' MemberExpression Arguments
     ;
 
 Literal
@@ -200,6 +254,8 @@ Literal
     | StringLiteral
     | BooleanLiteral
     | NullLiteral
+    | ThisLiteral
+    | SuperLiteral
     ;
 
 NumericLiteral
@@ -217,5 +273,17 @@ BooleanLiteral
 
 NullLiteral
     : 'null'
+    ;
+
+ThisLiteral
+    : 'this'
+    ;
+
+SuperLiteral
+    : 'super'
+    ;
+
+Identifier
+    : IDENTIFIER
     ;
 ```

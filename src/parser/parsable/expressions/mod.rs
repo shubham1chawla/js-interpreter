@@ -9,6 +9,7 @@ mod lhs;
 mod logical;
 mod member;
 mod multiplicative;
+mod new;
 mod paranthesized;
 mod primary;
 mod relational;

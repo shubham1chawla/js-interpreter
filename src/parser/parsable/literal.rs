@@ -9,6 +9,8 @@ pub trait LiteralParsable {
      *  | StringLiteral
      *  | BooleanLiteral
      *  | NullLiteral
+     *  | ThisLiteral
+     *  | SuperLiteral
      *  ;
      */
     fn literal(&mut self) -> Result<Tree, SyntaxError>;
@@ -41,6 +43,20 @@ pub trait LiteralParsable {
      *  ;
      */
     fn null_literal(&mut self) -> Result<Tree, SyntaxError>;
+
+    /**
+     * ThisLiteral
+     *  : 'this'
+     *  ;
+     */
+    fn this_literal(&mut self) -> Result<Tree, SyntaxError>;
+
+    /**
+     * SuperLiteral
+     *  : 'super'
+     *  ;
+     */
+    fn super_literal(&mut self) -> Result<Tree, SyntaxError>;
 }
 
 impl LiteralParsable for Parser {
@@ -50,6 +66,8 @@ impl LiteralParsable for Parser {
             TokenType::String => self.string_literal(),
             TokenType::TrueKeyword | TokenType::FalseKeyword => self.boolean_literal(),
             TokenType::NullKeyword => self.null_literal(),
+            TokenType::ThisKeyword => self.this_literal(),
+            TokenType::SuperKeyword => self.super_literal(),
             _ => Err(SyntaxError {
                 message: String::from("Unexpected literal production!"),
             })
@@ -91,6 +109,16 @@ impl LiteralParsable for Parser {
     fn null_literal(&mut self) -> Result<Tree, SyntaxError> {
         self.eat(TokenType::NullKeyword)?;
         Ok(Tree::NullLiteral)
+    }
+
+    fn this_literal(&mut self) -> Result<Tree, SyntaxError> {
+        self.eat(TokenType::ThisKeyword)?;
+        Ok(Tree::ThisLiteral)
+    }
+
+    fn super_literal(&mut self) -> Result<Tree, SyntaxError> {
+        self.eat(TokenType::SuperKeyword)?;
+        Ok(Tree::SuperLiteral)
     }
 }
 
@@ -190,5 +218,29 @@ mod tests {
             ]),
         };
         assert_tree(expected, "null;");
+    }
+
+    #[test]
+    fn test_parse_this_literal() {
+        let expected = Tree::Program {
+            body: Box::new(vec![
+                Tree::ExpressionStatement {
+                    expression: Box::new(Tree::ThisLiteral),
+                },
+            ]),
+        };
+        assert_tree(expected, "this;");
+    }
+
+    #[test]
+    fn test_parse_super_literal() {
+        let expected = Tree::Program {
+            body: Box::new(vec![
+                Tree::ExpressionStatement {
+                    expression: Box::new(Tree::SuperLiteral),
+                },
+            ]),
+        };
+        assert_tree(expected, "super;");
     }
 }
