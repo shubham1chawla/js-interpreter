@@ -1,6 +1,6 @@
-use eatable::Eatable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
 
 pub trait EmptyStatementParsable {
     /**
@@ -8,11 +8,11 @@ pub trait EmptyStatementParsable {
      *  : ';'
      *  ;
      */
-    fn empty_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn empty_statement(&mut self) -> Result<Tree>;
 }
 
 impl EmptyStatementParsable for Parser {
-    fn empty_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn empty_statement(&mut self) -> Result<Tree> {
         self.eat(TokenType::SemiColon)?;
         Ok(Tree::EmptyStatement)
     }
@@ -20,9 +20,8 @@ impl EmptyStatementParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_empty_statement() {

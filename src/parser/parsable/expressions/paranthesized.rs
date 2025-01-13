@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use statements::expression::ExpressionStatementParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::statements::expression::ExpressionStatementParsable;
 
 pub trait ParanthesizedExpressionParsable {
     /**
@@ -9,11 +9,11 @@ pub trait ParanthesizedExpressionParsable {
      *  : '(' Expression ')'
      *  ;
      */
-    fn paranthesized_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn paranthesized_expression(&mut self) -> Result<Tree>;
 }
 
 impl ParanthesizedExpressionParsable for Parser {
-    fn paranthesized_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn paranthesized_expression(&mut self) -> Result<Tree> {
         self.eat(TokenType::CircleBracketOpen)?;
         let expression = self.expression()?;
         self.eat(TokenType::CircleBracketClose)?;
@@ -23,9 +23,8 @@ impl ParanthesizedExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_paranthesized_binary_expressions() {

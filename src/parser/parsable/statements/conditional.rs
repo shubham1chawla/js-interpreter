@@ -1,8 +1,8 @@
-use eatable::Eatable;
-use expression::ExpressionStatementParsable;
-use list::StatementListParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::expression::ExpressionStatementParsable;
+use super::list::StatementListParsable;
 
 pub trait IfStatementParsable {
     /**
@@ -11,11 +11,11 @@ pub trait IfStatementParsable {
      *  | 'if' '(' Expression ')' Statement 'else' Statement
      *  ;
      */
-    fn if_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn if_statement(&mut self) -> Result<Tree>;
 }
 
 impl IfStatementParsable for Parser {
-    fn if_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn if_statement(&mut self) -> Result<Tree> {
         self.eat(TokenType::IfKeyword)?;
 
         self.eat(TokenType::CircleBracketOpen)?;
@@ -41,9 +41,8 @@ impl IfStatementParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_no_alternate_simple_if_statement() {

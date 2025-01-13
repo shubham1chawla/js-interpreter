@@ -1,10 +1,10 @@
-use function::FunctionExpressionParsable;
-use identifier::IdentifierParsable;
-use literal::LiteralParsable;
-use new::NewExpressionParsable;
-use paranthesized::ParanthesizedExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::function::FunctionExpressionParsable;
+use super::identifier::IdentifierParsable;
+use super::literal::LiteralParsable;
+use super::new::NewExpressionParsable;
+use super::paranthesized::ParanthesizedExpressionParsable;
 
 pub trait PrimaryExpressionParsable {
     /**
@@ -16,11 +16,11 @@ pub trait PrimaryExpressionParsable {
      *  | Identifier
      *  ;
      */
-    fn primary_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn primary_expression(&mut self) -> Result<Tree>;
 }
 
 impl PrimaryExpressionParsable for Parser {
-    fn primary_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn primary_expression(&mut self) -> Result<Tree> {
         match self.lookahead.token_type {
             TokenType::CircleBracketOpen => self.paranthesized_expression(),
             TokenType::FunctionKeyword => self.function_expression(),

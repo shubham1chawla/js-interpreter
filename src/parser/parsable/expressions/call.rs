@@ -1,8 +1,8 @@
-use assignment::AssignmentExpressionParsable;
-use eatable::Eatable;
-use member::MemberExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::assignment::AssignmentExpressionParsable;
+use super::eatable::Eatable;
+use super::member::MemberExpressionParsable;
 
 pub trait CallExpressionParsable {
     /**
@@ -11,7 +11,7 @@ pub trait CallExpressionParsable {
      *  | CallExpression
      *  ;
      */
-    fn call_member_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn call_member_expression(&mut self) -> Result<Tree>;
 
     /**
      * CallExpression
@@ -23,14 +23,14 @@ pub trait CallExpressionParsable {
      *  | CallExpression
      *  ;
      */
-    fn call_expression(&mut self, callee: Tree) -> Result<Tree, SyntaxError>;
+    fn call_expression(&mut self, callee: Tree) -> Result<Tree>;
 
     /**
      * Arguments
      *  : '(' OptArgumentList ')'
      *  ;
      */
-    fn arguments(&mut self) -> Result<Vec<Tree>, SyntaxError>;
+    fn arguments(&mut self) -> Result<Vec<Tree>>;
 
     /**
      * ArgumentList
@@ -38,11 +38,11 @@ pub trait CallExpressionParsable {
      *  | ArgumentList ',' AssignmentExpression
      *  ;
      */
-    fn argument_list(&mut self) -> Result<Vec<Tree>, SyntaxError>;
+    fn argument_list(&mut self) -> Result<Vec<Tree>>;
 }
 
 impl CallExpressionParsable for Parser {
-    fn call_member_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn call_member_expression(&mut self) -> Result<Tree> {
         // Member part, might be part of a call
         let member = self.member_expression()?;
 
@@ -55,7 +55,7 @@ impl CallExpressionParsable for Parser {
         Ok(member)
     }
 
-    fn call_expression(&mut self, callee: Tree) -> Result<Tree, SyntaxError> {
+    fn call_expression(&mut self, callee: Tree) -> Result<Tree> {
         let mut call_expression = Tree::CallExpression {
             callee: Box::new(callee),
             arguments: Box::new(self.arguments()?),
@@ -69,7 +69,7 @@ impl CallExpressionParsable for Parser {
         Ok(call_expression)
     }
 
-    fn arguments(&mut self) -> Result<Vec<Tree>, SyntaxError> {
+    fn arguments(&mut self) -> Result<Vec<Tree>> {
         self.eat(TokenType::CircleBracketOpen)?;
 
         let arguments = match self.lookahead.token_type {
@@ -82,7 +82,7 @@ impl CallExpressionParsable for Parser {
         Ok(arguments)
     }
 
-    fn argument_list(&mut self) -> Result<Vec<Tree>, SyntaxError> {
+    fn argument_list(&mut self) -> Result<Vec<Tree>> {
         let mut arguments = vec![];
 
         // Consuming arguments until we hit the ')' token
@@ -101,9 +101,8 @@ impl CallExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_call_expression() {

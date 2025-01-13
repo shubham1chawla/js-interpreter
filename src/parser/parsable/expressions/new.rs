@@ -1,8 +1,8 @@
-use call::CallExpressionParsable;
-use eatable::Eatable;
-use member::MemberExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::call::CallExpressionParsable;
+use super::eatable::Eatable;
+use super::member::MemberExpressionParsable;
 
 pub trait NewExpressionParsable {
     /**
@@ -10,11 +10,11 @@ pub trait NewExpressionParsable {
      *  : 'new' MemberExpression Arguments
      *  ;
      */
-    fn new_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn new_expression(&mut self) -> Result<Tree>;
 }
 
 impl NewExpressionParsable for Parser {
-    fn new_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn new_expression(&mut self) -> Result<Tree> {
         self.eat(TokenType::NewKeyword)?;
         Ok(Tree::NewExpression {
             callee: Box::new(self.member_expression()?),
@@ -25,9 +25,8 @@ impl NewExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_new_expression() {

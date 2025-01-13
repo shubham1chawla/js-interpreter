@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use lhs::LeftHandSideExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::lhs::LeftHandSideExpressionParsable;
 
 pub trait UnaryExpressionParsable {
     /**
@@ -11,11 +11,11 @@ pub trait UnaryExpressionParsable {
      *  | LOGICAL_NOT UnaryExpression
      *  ;
      */
-    fn unary_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn unary_expression(&mut self) -> Result<Tree>;
 }
 
 impl UnaryExpressionParsable for Parser {
-    fn unary_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn unary_expression(&mut self) -> Result<Tree> {
         let operator = match self.lookahead.token_type {
             TokenType::AdditiveOperator => Some(self.eat(TokenType::AdditiveOperator)?),
             TokenType::LogicalNotOperator => Some(self.eat(TokenType::LogicalNotOperator)?),
@@ -33,9 +33,8 @@ impl UnaryExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_unary_expression_1() {

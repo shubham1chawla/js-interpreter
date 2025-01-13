@@ -1,6 +1,6 @@
-use eatable::Eatable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
 
 pub trait LiteralParsable {
     /**
@@ -13,21 +13,21 @@ pub trait LiteralParsable {
      *  | SuperLiteral
      *  ;
      */
-    fn literal(&mut self) -> Result<Tree, SyntaxError>;
+    fn literal(&mut self) -> Result<Tree>;
 
     /**
      * NumericLiteral
      *  : NUMBER
      *  ;
      */
-    fn numeric_literal(&mut self) -> Result<Tree, SyntaxError>;
+    fn numeric_literal(&mut self) -> Result<Tree>;
 
     /**
      * StringLiteral
      *  : STRING
      *  ;
      */
-    fn string_literal(&mut self) -> Result<Tree, SyntaxError>;
+    fn string_literal(&mut self) -> Result<Tree>;
 
     /**
      * BooleanLiteral
@@ -35,32 +35,32 @@ pub trait LiteralParsable {
      *  | 'false'
      *  ;
      */
-    fn boolean_literal(&mut self) -> Result<Tree, SyntaxError>;
+    fn boolean_literal(&mut self) -> Result<Tree>;
 
     /**
      * NullLiteral
      *  : 'null'
      *  ;
      */
-    fn null_literal(&mut self) -> Result<Tree, SyntaxError>;
+    fn null_literal(&mut self) -> Result<Tree>;
 
     /**
      * ThisLiteral
      *  : 'this'
      *  ;
      */
-    fn this_literal(&mut self) -> Result<Tree, SyntaxError>;
+    fn this_literal(&mut self) -> Result<Tree>;
 
     /**
      * SuperLiteral
      *  : 'super'
      *  ;
      */
-    fn super_literal(&mut self) -> Result<Tree, SyntaxError>;
+    fn super_literal(&mut self) -> Result<Tree>;
 }
 
 impl LiteralParsable for Parser {
-    fn literal(&mut self) -> Result<Tree, SyntaxError> {
+    fn literal(&mut self) -> Result<Tree> {
         match self.lookahead.token_type {
             TokenType::Number => self.numeric_literal(),
             TokenType::String => self.string_literal(),
@@ -68,23 +68,19 @@ impl LiteralParsable for Parser {
             TokenType::NullKeyword => self.null_literal(),
             TokenType::ThisKeyword => self.this_literal(),
             TokenType::SuperKeyword => self.super_literal(),
-            _ => Err(SyntaxError {
-                message: String::from("Unexpected literal production!"),
-            })
+            _ => Err(Error::Syntax("Unexpected literal production!".to_string()))
         }
     }
 
-    fn numeric_literal(&mut self) -> Result<Tree, SyntaxError> {
+    fn numeric_literal(&mut self) -> Result<Tree> {
         let token = self.eat(TokenType::Number)?;
         match token.value.parse() {
-            Err(_) => Err(SyntaxError {
-                message: String::from("Expected a parsable numeric value!"),
-            }),
+            Err(_) => Err(Error::Syntax("Expected a parsable numeric value!".to_string())),
             Ok(parsed) => Ok(Tree::NumericLiteral { value: parsed })
         }
     }
 
-    fn string_literal(&mut self) -> Result<Tree, SyntaxError> {
+    fn string_literal(&mut self) -> Result<Tree> {
         let token = self.eat(TokenType::String)?;
 
         // Removing quotes from start and end
@@ -92,31 +88,29 @@ impl LiteralParsable for Parser {
         return Ok(Tree::StringLiteral { value })
     }
 
-    fn boolean_literal(&mut self) -> Result<Tree, SyntaxError> {
+    fn boolean_literal(&mut self) -> Result<Tree> {
         let token = match self.lookahead.token_type {
             TokenType::FalseKeyword => self.eat(TokenType::FalseKeyword)?,
             _ => self.eat(TokenType::TrueKeyword)?,
         };
 
         match token.value.parse::<bool>() {
-            Err(_) => Err(SyntaxError {
-                message: String::from("Expected a parsable boolean value!"),
-            }),
+            Err(_) => Err(Error::Syntax("Expected a parsable boolean value!".to_string())),
             Ok(parsed) => Ok(Tree::BooleanLiteral { value: parsed }),
         }
     }
 
-    fn null_literal(&mut self) -> Result<Tree, SyntaxError> {
+    fn null_literal(&mut self) -> Result<Tree> {
         self.eat(TokenType::NullKeyword)?;
         Ok(Tree::NullLiteral)
     }
 
-    fn this_literal(&mut self) -> Result<Tree, SyntaxError> {
+    fn this_literal(&mut self) -> Result<Tree> {
         self.eat(TokenType::ThisKeyword)?;
         Ok(Tree::ThisLiteral)
     }
 
-    fn super_literal(&mut self) -> Result<Tree, SyntaxError> {
+    fn super_literal(&mut self) -> Result<Tree> {
         self.eat(TokenType::SuperKeyword)?;
         Ok(Tree::SuperLiteral)
     }
@@ -124,9 +118,8 @@ impl LiteralParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::parsable::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_literal_numeric() {
@@ -154,9 +147,7 @@ mod tests {
 
     #[test]
     fn test_parse_missing_semicolon() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token EOF, expected SemiColon!"),
-        };
+        let expected = Error::Syntax("Unexpected token EOF, expected SemiColon!".to_string());
         assert_syntax_error(expected, "42");
     }
 

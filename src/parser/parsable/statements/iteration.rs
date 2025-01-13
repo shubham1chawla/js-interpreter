@@ -1,9 +1,9 @@
-use eatable::Eatable;
-use expression::ExpressionStatementParsable;
-use list::StatementListParsable;
-use variable::VariableStatementParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::expression::ExpressionStatementParsable;
+use super::list::StatementListParsable;
+use super::variable::VariableStatementParsable;
 
 pub trait IterationStatementParsable {
     /**
@@ -13,28 +13,28 @@ pub trait IterationStatementParsable {
      *  | ForStatement
      *  ;
      */
-    fn iteration_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn iteration_statement(&mut self) -> Result<Tree>;
 
     /**
      * WhileStatement
      *  : 'while' '(' Expression ')' Statement
      *  ;
      */
-    fn while_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn while_statement(&mut self) -> Result<Tree>;
 
     /**
      * DoWhileStatement
      *  : 'do' Statement '(' Expression ')' ';'
      *  ;
      */
-    fn do_while_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn do_while_statement(&mut self) -> Result<Tree>;
 
     /**
      * ForStatement
      *  : 'for' '(' OptForStatementInit ';' OptExpression ';' OptExpression ')' Statement
      *  ;
      */
-    fn for_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn for_statement(&mut self) -> Result<Tree>;
 
     /**
      * ForStatementInit
@@ -42,11 +42,11 @@ pub trait IterationStatementParsable {
      *  | Expression
      *  ;
      */
-    fn for_statement_init(&mut self) -> Result<Tree, SyntaxError>;
+    fn for_statement_init(&mut self) -> Result<Tree>;
 }
 
 impl IterationStatementParsable for Parser {
-    fn iteration_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn iteration_statement(&mut self) -> Result<Tree> {
         match self.lookahead.token_type {
             TokenType::DoKeyword => self.do_while_statement(),
             TokenType::ForKeyword => self.for_statement(),
@@ -54,7 +54,7 @@ impl IterationStatementParsable for Parser {
         }
     }
 
-    fn while_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn while_statement(&mut self) -> Result<Tree> {
         self.eat(TokenType::WhileKeyword)?;
 
         self.eat(TokenType::CircleBracketOpen)?;
@@ -69,7 +69,7 @@ impl IterationStatementParsable for Parser {
         })
     }
 
-    fn do_while_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn do_while_statement(&mut self) -> Result<Tree> {
         self.eat(TokenType::DoKeyword)?;
 
         let body = self.statement()?;
@@ -87,7 +87,7 @@ impl IterationStatementParsable for Parser {
         })
     }
 
-    fn for_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn for_statement(&mut self) -> Result<Tree> {
         self.eat(TokenType::ForKeyword)?;
         self.eat(TokenType::CircleBracketOpen)?;
 
@@ -119,7 +119,7 @@ impl IterationStatementParsable for Parser {
         })
     }
 
-    fn for_statement_init(&mut self) -> Result<Tree, SyntaxError> {
+    fn for_statement_init(&mut self) -> Result<Tree> {
         match self.lookahead.token_type {
             TokenType::LetKeyword => self.variable_statement_init(),
             _ => self.expression(),
@@ -129,9 +129,8 @@ impl IterationStatementParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_while_statement_1() {

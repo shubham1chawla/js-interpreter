@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use relational::RelationalExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::relational::RelationalExpressionParsable;
 
 pub trait EqualityExpressionParsable {
     /**
@@ -13,11 +13,11 @@ pub trait EqualityExpressionParsable {
      * NOTE: Since RelationalExpression has higher presidence over EqualityExpression
      * the left and right sub-tree of EqualityExpression looks for a RelationalExpression.
      */
-    fn equality_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn equality_expression(&mut self) -> Result<Tree>;
 }
 
 impl EqualityExpressionParsable for Parser {
-    fn equality_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn equality_expression(&mut self) -> Result<Tree> {
         let mut left = self.relational_expression()?;
 
         while self.lookahead.token_type == TokenType::EqualityOperator {
@@ -40,9 +40,8 @@ impl EqualityExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_equality_expression_1() {

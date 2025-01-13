@@ -1,8 +1,9 @@
-use eatable::Eatable;
-use identifier::IdentifierParsable;
-use statements::{block::BlockStatementParsable, function::FunctionDeclarationParsable};
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::identifier::IdentifierParsable;
+use super::statements::block::BlockStatementParsable;
+use super::statements::function::FunctionDeclarationParsable;
 
 pub trait FunctionExpressionParsable {
     /**
@@ -10,11 +11,11 @@ pub trait FunctionExpressionParsable {
      *  : 'function' OptIdentifier '(' OptFormalParameterList ')' BlockStatement
      *  ;
      */
-    fn function_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn function_expression(&mut self) -> Result<Tree>;
 }
 
 impl FunctionExpressionParsable for Parser {
-    fn function_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn function_expression(&mut self) -> Result<Tree> {
         self.eat(TokenType::FunctionKeyword)?;
 
         let identifier = match self.lookahead.token_type {
@@ -41,9 +42,8 @@ impl FunctionExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_function_expression_1() {
@@ -101,17 +101,17 @@ mod tests {
 
     #[test]
     fn test_parse_assigning_rvalue_function_expression() {
-        let expected = SyntaxError {
-            message: String::from("Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!"),
-        };
+        let expected = Error::Syntax(
+            "Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!".to_string()
+        );
         assert_syntax_error(expected, "let x = function(){} = y;");
     }
 
     #[test]
     fn test_parse_invalid_function_expression() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token CircleBracketOpen, expected Identifier!"),
-        };
+        let expected = Error::Syntax(
+            "Unexpected token CircleBracketOpen, expected Identifier!".to_string()
+        );
         assert_syntax_error(expected, "function() {};");
     }
 }

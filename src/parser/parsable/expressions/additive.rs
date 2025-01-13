@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use multiplicative::MultiplicativeExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::multiplicative::MultiplicativeExpressionParsable;
 
 pub trait AdditiveExpressionParsable {
     /**
@@ -13,11 +13,11 @@ pub trait AdditiveExpressionParsable {
      * NOTE: Since MultiplicativeExpression has higher presidence over AdditiveExpression
      * the left and right sub-tree of AdditiveExpression looks for a MultiplicativeExpression.
      */
-    fn additive_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn additive_expression(&mut self) -> Result<Tree>;
 }
 
 impl AdditiveExpressionParsable for Parser {
-    fn additive_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn additive_expression(&mut self) -> Result<Tree> {
         let mut left = self.multiplicative_expression()?;
 
         while self.lookahead.token_type == TokenType::AdditiveOperator {
@@ -40,9 +40,8 @@ impl AdditiveExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_additive_binary_expressions() {

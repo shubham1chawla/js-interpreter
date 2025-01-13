@@ -1,13 +1,13 @@
-use block::BlockStatementParsable;
-use class::ClassDeclarationParsable;
-use empty::EmptyStatementParsable;
-use expression::ExpressionStatementParsable;
-use conditional::IfStatementParsable;
-use function::FunctionDeclarationParsable;
-use iteration::IterationStatementParsable;
-use variable::VariableStatementParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::block::BlockStatementParsable;
+use super::class::ClassDeclarationParsable;
+use super::empty::EmptyStatementParsable;
+use super::expression::ExpressionStatementParsable;
+use super::conditional::IfStatementParsable;
+use super::function::FunctionDeclarationParsable;
+use super::iteration::IterationStatementParsable;
+use super::variable::VariableStatementParsable;
 
 pub trait StatementListParsable {
     /**
@@ -16,7 +16,7 @@ pub trait StatementListParsable {
      *  | StatementList Statement
      *  ;
      */
-    fn statement_list(&mut self, stop_lookahead_type: TokenType) -> Result<Vec<Tree>, SyntaxError>;
+    fn statement_list(&mut self, stop_lookahead_type: TokenType) -> Result<Vec<Tree>>;
 
     /**
      * Statement
@@ -37,11 +37,11 @@ pub trait StatementListParsable {
      *  | ForStatement
      *  ;
      */
-    fn statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn statement(&mut self) -> Result<Tree>;
 }
 
 impl StatementListParsable for Parser {
-    fn statement_list(&mut self, stop_lookahead_type: TokenType) -> Result<Vec<Tree>, SyntaxError> {
+    fn statement_list(&mut self, stop_lookahead_type: TokenType) -> Result<Vec<Tree>> {
         let mut statement_list = vec![];
 
         while self.lookahead.token_type != stop_lookahead_type {
@@ -51,7 +51,7 @@ impl StatementListParsable for Parser {
         Ok(statement_list)
     }
 
-    fn statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn statement(&mut self) -> Result<Tree> {
         match self.lookahead.token_type {
             TokenType::WhileKeyword | TokenType::DoKeyword | TokenType::ForKeyword => self.iteration_statement(),
             TokenType::FunctionKeyword => self.function_declaration(),
@@ -68,9 +68,8 @@ impl StatementListParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_statement_list() {

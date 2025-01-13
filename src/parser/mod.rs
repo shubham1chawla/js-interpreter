@@ -1,13 +1,11 @@
-use tokenizer::*;
-use tree::*;
+use crate::prelude::*;
+
 pub use parsable::parsable::Parsable;
 
 mod parsable;
-mod tree;
-mod tokenizer;
 
 /**
- * Letter parser: recursive decent parser implementation
+ * Recursive decent parser implementation
  */
 pub struct Parser {
     tokenizer: Tokenizer,
@@ -18,7 +16,7 @@ impl Parser {
     /**
      * Creates a new parser instance with code content as string.
      */
-    pub fn new(content_string: String) -> Result<Self, SyntaxError> {
+    pub fn new(content_string: String) -> Result<Self> {
         let mut tokenizer = Tokenizer::new(content_string);
 
         // Prime the tokenizer to obtain the first token

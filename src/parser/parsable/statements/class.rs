@@ -1,10 +1,10 @@
-use block::BlockStatementParsable;
-use eatable::Eatable;
-use expressions::assignment::AssignmentExpressionParsable;
-use function::FunctionDeclarationParsable;
-use identifier::IdentifierParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::block::BlockStatementParsable;
+use super::eatable::Eatable;
+use super::expressions::assignment::AssignmentExpressionParsable;
+use super::function::FunctionDeclarationParsable;
+use super::identifier::IdentifierParsable;
 
 pub trait ClassDeclarationParsable {
     /**
@@ -16,14 +16,14 @@ pub trait ClassDeclarationParsable {
      *  : 'extends' Identifier
      *  ;
      */
-    fn class_delaration(&mut self) -> Result<Tree, SyntaxError>;
+    fn class_delaration(&mut self) -> Result<Tree>;
 
     /**
      * ClassBody
      *  : '{' OptClassStatementList '}'
      *  ;
      */
-    fn class_body(&mut self) -> Result<Tree, SyntaxError>;
+    fn class_body(&mut self) -> Result<Tree>;
 
     /**
      * ClassStatementList
@@ -31,7 +31,7 @@ pub trait ClassDeclarationParsable {
      *  | ClassStatementList ClassStatement
      *  ;
      */
-    fn class_statement_list(&mut self) -> Result<Vec<Tree>, SyntaxError>;
+    fn class_statement_list(&mut self) -> Result<Vec<Tree>>;
 
     /**
      * ClassStatement
@@ -42,53 +42,53 @@ pub trait ClassDeclarationParsable {
      *  | PropertyDefinition
      *  ;
      */
-    fn class_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn class_statement(&mut self) -> Result<Tree>;
 
     /**
      * ConstructorDefinition
      *  : 'constructor' '(' OptFormalParameterList ')' BlockStatement
      *  ;
      */
-    fn constructor_definition(&mut self) -> Result<Tree, SyntaxError>;
+    fn constructor_definition(&mut self) -> Result<Tree>;
 
     /**
      * GetterDefinition
      *  : 'get' Identifier '(' ')' BlockStatement
      *  ;
      */
-    fn getter_definition(&mut self) -> Result<Tree, SyntaxError>;
+    fn getter_definition(&mut self) -> Result<Tree>;
     
     /**
      * SetterDefinition
      *  : 'set' Identifier '(' Identifier ')' BlockStatement 
      *  ;
      */
-    fn setter_definition(&mut self) -> Result<Tree, SyntaxError>;
+    fn setter_definition(&mut self) -> Result<Tree>;
 
     /**
      * MethodDefinition
      *  : Identifier '(' OptFormalParameterList ')' BlockStatement
      *  ;
      */
-    fn method_definition(&mut self, identifier: Tree) -> Result<Tree, SyntaxError>;
+    fn method_definition(&mut self, identifier: Tree) -> Result<Tree>;
 
     /**
      * PropertyDefinition
      *  : Identifier OptPropertyInitializer ';'
      *  ;
      */
-    fn property_definition(&mut self) -> Result<Tree, SyntaxError>;
+    fn property_definition(&mut self) -> Result<Tree>;
 
     /**
      * PropertyInitializer
      *  : SIMPLE_ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
      */
-    fn property_initializer(&mut self) -> Result<Tree, SyntaxError>;
+    fn property_initializer(&mut self) -> Result<Tree>;
 }
 
 impl ClassDeclarationParsable for Parser {
-    fn class_delaration(&mut self) -> Result<Tree, SyntaxError> {
+    fn class_delaration(&mut self) -> Result<Tree> {
         self.eat(TokenType::ClassKeyword)?;
         let identifier = self.identifier()?;
 
@@ -110,7 +110,7 @@ impl ClassDeclarationParsable for Parser {
         })
     }
 
-    fn class_body(&mut self) -> Result<Tree, SyntaxError> {
+    fn class_body(&mut self) -> Result<Tree> {
         self.eat(TokenType::CurlyBracketOpen)?;
 
         // OptClassStatementList
@@ -124,7 +124,7 @@ impl ClassDeclarationParsable for Parser {
         Ok(Tree::ClassBody { body: Box::new(statements) })
     }
 
-    fn class_statement_list(&mut self) -> Result<Vec<Tree>, SyntaxError> {
+    fn class_statement_list(&mut self) -> Result<Vec<Tree>> {
         let mut statements = vec![];
 
         while self.lookahead.token_type != TokenType::CurlyBracketClose {
@@ -134,7 +134,7 @@ impl ClassDeclarationParsable for Parser {
         Ok(statements)
     }
 
-    fn class_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn class_statement(&mut self) -> Result<Tree> {
         match self.lookahead.token_type {
             TokenType::ConstructorKeyword => self.constructor_definition(),
             TokenType::GetKeyword => self.getter_definition(),
@@ -143,7 +143,7 @@ impl ClassDeclarationParsable for Parser {
         }
     }
 
-    fn constructor_definition(&mut self) -> Result<Tree, SyntaxError> {
+    fn constructor_definition(&mut self) -> Result<Tree> {
         self.eat(TokenType::ConstructorKeyword)?;
         self.eat(TokenType::CircleBracketOpen)?;
 
@@ -166,7 +166,7 @@ impl ClassDeclarationParsable for Parser {
         })
     }
 
-    fn getter_definition(&mut self) -> Result<Tree, SyntaxError> {
+    fn getter_definition(&mut self) -> Result<Tree> {
         self.eat(TokenType::GetKeyword)?;
         let identifier = self.identifier()?;
 
@@ -188,7 +188,7 @@ impl ClassDeclarationParsable for Parser {
         })
     }
 
-    fn setter_definition(&mut self) -> Result<Tree, SyntaxError> {
+    fn setter_definition(&mut self) -> Result<Tree> {
         self.eat(TokenType::SetKeyword)?;
         let identifier = self.identifier()?;
 
@@ -213,7 +213,7 @@ impl ClassDeclarationParsable for Parser {
         })
     }
 
-    fn method_definition(&mut self, identifier: Tree) -> Result<Tree, SyntaxError> {
+    fn method_definition(&mut self, identifier: Tree) -> Result<Tree> {
         self.eat(TokenType::CircleBracketOpen)?;
 
         // OptFormalParameterList
@@ -236,7 +236,7 @@ impl ClassDeclarationParsable for Parser {
         })
     }
 
-    fn property_definition(&mut self) -> Result<Tree, SyntaxError> {
+    fn property_definition(&mut self) -> Result<Tree> {
         let identifier = self.identifier()?;
 
         // Checking if production is MethodDefinition
@@ -258,7 +258,7 @@ impl ClassDeclarationParsable for Parser {
         })
     }
 
-    fn property_initializer(&mut self) -> Result<Tree, SyntaxError> {
+    fn property_initializer(&mut self) -> Result<Tree> {
         self.eat(TokenType::SimpleAssignmentOperator)?;
         self.assignment_expression()
     }
@@ -266,9 +266,8 @@ impl ClassDeclarationParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_class_declaration() {
@@ -428,9 +427,7 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_getter_class_declaration() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token Identifier, expected CircleBracketClose!"),
-        };
+        let expected = Error::Syntax("Unexpected token Identifier, expected CircleBracketClose!".to_string());
         assert_syntax_error(expected, "
             class Point {
                 get x(y) {}
@@ -485,9 +482,7 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_setter_class_declaration_1() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token Comma, expected CircleBracketClose!"),
-        };
+        let expected = Error::Syntax("Unexpected token Comma, expected CircleBracketClose!".to_string());
         assert_syntax_error(expected, "
             class Point {
                 set x(y, z) {}
@@ -497,9 +492,7 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_setter_class_declaration_2() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token CircleBracketClose, expected Identifier!"),
-        };
+        let expected = Error::Syntax("Unexpected token CircleBracketClose, expected Identifier!".to_string());
         assert_syntax_error(expected, "
             class Point {
                 set x() {}

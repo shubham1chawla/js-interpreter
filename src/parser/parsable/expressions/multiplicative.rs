@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use unary::UnaryExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::unary::UnaryExpressionParsable;
 
 pub trait MultiplicativeExpressionParsable {
     /**
@@ -13,11 +13,11 @@ pub trait MultiplicativeExpressionParsable {
      * NOTE: Since UnaryExpression has higher presidence over MultiplicativeExpression
      * the left and right sub-tree of MultiplicativeExpression looks for a UnaryExpression.
      */
-    fn multiplicative_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn multiplicative_expression(&mut self) -> Result<Tree>;
 }
 
 impl MultiplicativeExpressionParsable for Parser {
-    fn multiplicative_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn multiplicative_expression(&mut self) -> Result<Tree> {
         let mut left = self.unary_expression()?;
 
         while self.lookahead.token_type == TokenType::MultiplicativeOperator {
@@ -40,9 +40,8 @@ impl MultiplicativeExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_multiplicative_binary_expressions() {

@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use equality::EqualityExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::equality::EqualityExpressionParsable;
 
 pub trait LogicalExpressionParsable {
     /**
@@ -13,7 +13,7 @@ pub trait LogicalExpressionParsable {
      * NOTE: Since LogicalAndExpression has higher presidence over LogicalOrExpression
      * the left and right sub-tree of LogicalOrExpression looks for a LogicalAndExpression.
      */
-    fn logical_or_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn logical_or_expression(&mut self) -> Result<Tree>;
 
     /**
      * LogicalAndExpression
@@ -24,11 +24,11 @@ pub trait LogicalExpressionParsable {
      * NOTE: Since EqualityExpression has higher presidence over LogicalAndExpression
      * the left and right sub-tree of LogicalAndExpression looks for a EqualityExpression.
      */
-    fn logical_and_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn logical_and_expression(&mut self) -> Result<Tree>;
 }
 
 impl LogicalExpressionParsable for Parser {
-    fn logical_or_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn logical_or_expression(&mut self) -> Result<Tree> {
         let mut left = self.logical_and_expression()?;
 
         while self.lookahead.token_type == TokenType::LogicalOrOperator {
@@ -48,7 +48,7 @@ impl LogicalExpressionParsable for Parser {
         Ok(left)
     }
 
-    fn logical_and_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn logical_and_expression(&mut self) -> Result<Tree> {
         let mut left = self.equality_expression()?;
 
         while self.lookahead.token_type == TokenType::LogicalAndOperator {
@@ -71,9 +71,8 @@ impl LogicalExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_and_logical_expression() {
@@ -141,17 +140,13 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_and_logical_expression() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token: &"),
-        };
+        let expected = Error::Syntax("Unexpected token: &".to_string());
         assert_syntax_error(expected, "x & y;");
     }
 
     #[test]
     fn test_parse_invalid_or_logical_expression() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token: |"),
-        };
+        let expected = Error::Syntax("Unexpected token: |".to_string());
         assert_syntax_error(expected, "x | y;");
     }
 }

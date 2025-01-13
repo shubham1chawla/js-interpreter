@@ -1,6 +1,6 @@
-use eatable::Eatable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
 
 pub trait IdentifierParsable {
     /**
@@ -8,11 +8,11 @@ pub trait IdentifierParsable {
      *  : IDENTIFIER
      *  ;
      */
-    fn identifier(&mut self) -> Result<Tree, SyntaxError>;
+    fn identifier(&mut self) -> Result<Tree>;
 }
 
 impl IdentifierParsable for Parser {
-    fn identifier(&mut self) -> Result<Tree, SyntaxError> {
+    fn identifier(&mut self) -> Result<Tree> {
         let name = self.eat(TokenType::Identifier)?.value;
         Ok(Tree::Identifier { name })
     }

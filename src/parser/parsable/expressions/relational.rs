@@ -1,7 +1,7 @@
-use additive::AdditiveExpressionParsable;
-use eatable::Eatable;
+use crate::prelude::*;
 
-use super::*;
+use super::additive::AdditiveExpressionParsable;
+use super::eatable::Eatable;
 
 pub trait RelationalExpressionParsable {
     /**
@@ -13,11 +13,11 @@ pub trait RelationalExpressionParsable {
      * NOTE: Since AdditiveExpression has higher presidence over RelationalExpression
      * the left and right sub-tree of RelationalExpression looks for a AdditiveExpression.
      */
-    fn relational_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn relational_expression(&mut self) -> Result<Tree>;
 }
 
 impl RelationalExpressionParsable for Parser {
-    fn relational_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn relational_expression(&mut self) -> Result<Tree> {
         let mut left = self.additive_expression()?;
 
         while self.lookahead.token_type == TokenType::RelationalOperator {
@@ -40,9 +40,8 @@ impl RelationalExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_relational_expression() {

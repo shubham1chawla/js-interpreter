@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use logical::LogicalExpressionParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::logical::LogicalExpressionParsable;
 
 pub trait AssignmentExpressionParsable {
     /**
@@ -10,7 +10,7 @@ pub trait AssignmentExpressionParsable {
      *  | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
      */
-    fn assignment_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn assignment_expression(&mut self) -> Result<Tree>;
 
     /**
      * Whether the token is an assignment operator.
@@ -20,7 +20,7 @@ pub trait AssignmentExpressionParsable {
     /**
      * Extra check whether it's valid assignment target.
      */
-    fn check_valid_assignment_target(&mut self, node: Tree) -> Result<Tree, SyntaxError>;
+    fn check_valid_assignment_target(&mut self, node: Tree) -> Result<Tree>;
 
     /**
      * AssignmentOperator
@@ -28,11 +28,11 @@ pub trait AssignmentExpressionParsable {
      *  | COMPLEX_ASSIGNMENT_OPERATOR
      *  ;
      */
-    fn assignment_operator(&mut self) -> Result<Token, SyntaxError>;
+    fn assignment_operator(&mut self) -> Result<Token>;
 }
 
 impl AssignmentExpressionParsable for Parser {
-    fn assignment_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn assignment_expression(&mut self) -> Result<Tree> {
         let mut left = self.logical_or_expression()?;
 
         // Checking if the lookahead token is not of assignment type
@@ -63,16 +63,16 @@ impl AssignmentExpressionParsable for Parser {
         }
     }
 
-    fn check_valid_assignment_target(&mut self, node: Tree) -> Result<Tree, SyntaxError> {
+    fn check_valid_assignment_target(&mut self, node: Tree) -> Result<Tree> {
         match node {
             Tree::Identifier {..} | Tree::MemberExpression {..} => Ok(node),
-            _ => Err(SyntaxError {
-                message: String::from("Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!"),
-            })
+            _ => Err(Error::Syntax(
+                "Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!".to_string()
+            ))
         }
     }
 
-    fn assignment_operator(&mut self) -> Result<Token, SyntaxError> {
+    fn assignment_operator(&mut self) -> Result<Token> {
         match self.lookahead.token_type {
             TokenType::SimpleAssignmentOperator => self.eat(TokenType::SimpleAssignmentOperator),
             _ => self.eat(TokenType::ComplexAssignmentOperator),
@@ -82,9 +82,8 @@ impl AssignmentExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_assignment_expression_1() {
@@ -224,9 +223,9 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_assignment_expression() {
-        let expected = SyntaxError {
-            message: String::from("Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!"),
-        };
+        let expected = Error::Syntax(
+            "Invalid left-hand side in assignment expression, expected Identifier or MemberExpression!".to_string()
+        );
         assert_syntax_error(expected, "42 = 42;");
     }
 

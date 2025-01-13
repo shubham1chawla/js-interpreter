@@ -1,6 +1,6 @@
-use statements::list::StatementListParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::statements::list::StatementListParsable;
 
 pub trait ProgramParsable {
     /**
@@ -8,11 +8,11 @@ pub trait ProgramParsable {
      *  : StatementList
      *  ;
      */
-    fn program(&mut self) -> Result<Tree, SyntaxError>;
+    fn program(&mut self) -> Result<Tree>;
 }
 
 impl ProgramParsable for Parser {
-    fn program(&mut self) -> Result<Tree, SyntaxError> {
+    fn program(&mut self) -> Result<Tree> {
         let statement_list = self.statement_list(TokenType::EOF)?;
         Ok(Tree::Program { body: Box::new(statement_list) })
     }

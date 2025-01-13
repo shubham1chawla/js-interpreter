@@ -1,8 +1,8 @@
-use eatable::Eatable;
-use expressions::assignment::AssignmentExpressionParsable;
-use identifier::IdentifierParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::expressions::assignment::AssignmentExpressionParsable;
+use super::identifier::IdentifierParsable;
 
 pub trait VariableStatementParsable {
     /**
@@ -10,14 +10,14 @@ pub trait VariableStatementParsable {
      *  : VariableStatementInit ';'
      *  ;
      */
-    fn variable_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn variable_statement(&mut self) -> Result<Tree>;
 
     /**
      * VariableStatementInit
      *  : 'let' VariableDeclarationList
      *  ;
      */
-    fn variable_statement_init(&mut self) -> Result<Tree, SyntaxError>;
+    fn variable_statement_init(&mut self) -> Result<Tree>;
 
     /**
      * VariableDeclarationList
@@ -25,37 +25,37 @@ pub trait VariableStatementParsable {
      *  | VariableDeclarationList ',' VariableDeclaration
      *  ;
      */
-    fn variable_declaration_list(&mut self) -> Result<Vec<Tree>, SyntaxError>;
+    fn variable_declaration_list(&mut self) -> Result<Vec<Tree>>;
 
     /**
      * VariableDeclaration
      *  : Identifier OptVariableInitializer
      *  ;
      */
-    fn variable_declaration(&mut self) -> Result<Tree, SyntaxError>;
+    fn variable_declaration(&mut self) -> Result<Tree>;
 
     /**
      * VariableInitializer
      *  : SIMPLE_ASSIGNMENT_OPERATOR AssignmentExpression
      *  ;
      */
-    fn variable_initializer(&mut self) -> Result<Tree, SyntaxError>;
+    fn variable_initializer(&mut self) -> Result<Tree>;
 }
 
 impl VariableStatementParsable for Parser {
-    fn variable_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn variable_statement(&mut self) -> Result<Tree> {
         let statement = self.variable_statement_init()?;
         self.eat(TokenType::SemiColon)?;
         Ok(statement)
     }
 
-    fn variable_statement_init(&mut self) -> Result<Tree, SyntaxError> {
+    fn variable_statement_init(&mut self) -> Result<Tree> {
         self.eat(TokenType::LetKeyword)?;
         let declarations = self.variable_declaration_list()?;
         Ok(Tree::VariableStatement { declarations: Box::new(declarations) })
     }
 
-    fn variable_declaration_list(&mut self) -> Result<Vec<Tree>, SyntaxError> {
+    fn variable_declaration_list(&mut self) -> Result<Vec<Tree>> {
         let mut declarations = vec![self.variable_declaration()?];
 
         while self.lookahead.token_type == TokenType::Comma {
@@ -66,7 +66,7 @@ impl VariableStatementParsable for Parser {
         Ok(declarations)
     }
 
-    fn variable_declaration(&mut self) -> Result<Tree, SyntaxError> {
+    fn variable_declaration(&mut self) -> Result<Tree> {
         let identifier = self.identifier()?;
 
         // OptVariableInitializer
@@ -81,7 +81,7 @@ impl VariableStatementParsable for Parser {
         })
     }
 
-    fn variable_initializer(&mut self) -> Result<Tree, SyntaxError> {
+    fn variable_initializer(&mut self) -> Result<Tree> {
         self.eat(TokenType::SimpleAssignmentOperator)?;
         self.assignment_expression()
     }
@@ -90,9 +90,8 @@ impl VariableStatementParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_simple_no_init_variable_statement() {
@@ -214,17 +213,17 @@ mod tests {
 
     #[test]
     fn test_parse_complex_assignment_operator_variable_statement() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token ComplexAssignmentOperator, expected SimpleAssignmentOperator!"),
-        };
+        let expected = Error::Syntax(
+            "Unexpected token ComplexAssignmentOperator, expected SimpleAssignmentOperator!".to_string()
+        );
         assert_syntax_error(expected, "let x *= 42;");
     }
 
     #[test]
     fn test_parse_literal_eq_literal_variable_statement() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token Number, expected Identifier!"),
-        };
+        let expected = Error::Syntax(
+            "Unexpected token Number, expected Identifier!".to_string()
+        );
         assert_syntax_error(expected, "let 42 = 42;");
     }
 }

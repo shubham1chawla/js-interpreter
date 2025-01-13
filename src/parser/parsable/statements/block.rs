@@ -1,7 +1,7 @@
-use eatable::Eatable;
-use list::StatementListParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::list::StatementListParsable;
 
 pub trait BlockStatementParsable {
     /**
@@ -9,11 +9,11 @@ pub trait BlockStatementParsable {
      *  : '{' OptStatementList '}'
      *  ;
      */
-    fn block_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn block_statement(&mut self) -> Result<Tree>;
 }
 
 impl BlockStatementParsable for Parser {
-    fn block_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn block_statement(&mut self) -> Result<Tree> {
         self.eat(TokenType::CurlyBracketOpen)?;
         let body = match self.lookahead.token_type {
             TokenType::CurlyBracketClose => vec![],
@@ -26,9 +26,8 @@ impl BlockStatementParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_empty_block() {
@@ -94,9 +93,7 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_block_statement() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token EOF, expected Identifier!"),
-        };
+        let expected = Error::Syntax("Unexpected token EOF, expected Identifier!".to_string());
         assert_syntax_error(expected, "{");
     }
 }

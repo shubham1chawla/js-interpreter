@@ -1,9 +1,9 @@
-use block::BlockStatementParsable;
-use eatable::Eatable;
-use expression::ExpressionStatementParsable;
-use identifier::IdentifierParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::block::BlockStatementParsable;
+use super::eatable::Eatable;
+use super::expression::ExpressionStatementParsable;
+use super::identifier::IdentifierParsable;
 
 pub trait FunctionDeclarationParsable {
     /**
@@ -11,7 +11,7 @@ pub trait FunctionDeclarationParsable {
      *  : 'function' Identifier '(' OptFormalParameterList ')' BlockStatement
      *  ;
      */
-    fn function_declaration(&mut self) -> Result<Tree, SyntaxError>;
+    fn function_declaration(&mut self) -> Result<Tree>;
 
     /**
      * FormalParameterList
@@ -19,18 +19,18 @@ pub trait FunctionDeclarationParsable {
      *  | FormalParameterList ',' Identifier
      *  ;
      */
-    fn formal_parameter_list(&mut self) -> Result<Vec<Tree>, SyntaxError>;
+    fn formal_parameter_list(&mut self) -> Result<Vec<Tree>>;
 
     /**
      * ReturnStatement
      *  : 'return' OptExpression ';'
      *  ;
      */
-    fn return_statement(&mut self) -> Result<Tree, SyntaxError>;
+    fn return_statement(&mut self) -> Result<Tree>;
 }
 
 impl FunctionDeclarationParsable for Parser {
-    fn function_declaration(&mut self) -> Result<Tree, SyntaxError> {
+    fn function_declaration(&mut self) -> Result<Tree> {
         self.eat(TokenType::FunctionKeyword)?;
         let identifier = self.identifier()?;
 
@@ -53,7 +53,7 @@ impl FunctionDeclarationParsable for Parser {
         })
     }
     
-    fn formal_parameter_list(&mut self) -> Result<Vec<Tree>, SyntaxError> {
+    fn formal_parameter_list(&mut self) -> Result<Vec<Tree>> {
         let mut params = vec![];
 
         while self.lookahead.token_type == TokenType::Identifier {
@@ -68,7 +68,7 @@ impl FunctionDeclarationParsable for Parser {
         Ok(params)
     }
 
-    fn return_statement(&mut self) -> Result<Tree, SyntaxError> {
+    fn return_statement(&mut self) -> Result<Tree> {
         self.eat(TokenType::ReturnKeyword)?;
         
         let argument = match self.lookahead.token_type {
@@ -85,9 +85,8 @@ impl FunctionDeclarationParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use statements::tests::{assert_syntax_error, assert_tree};
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_function_declaration_1() {
@@ -177,9 +176,7 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_function_declaration_1() {
-        let expected = SyntaxError {
-            message: String::from("Unexpected token SemiColon, expected CurlyBracketOpen!"),
-        };
+        let expected = Error::Syntax("Unexpected token SemiColon, expected CurlyBracketOpen!".to_string());
         assert_syntax_error(expected, "function why();");
     }
 }

@@ -1,3 +1,4 @@
+use crate::prelude::{Error, Result};
 use std::fmt::format;
 
 use regex::Regex;
@@ -170,7 +171,7 @@ impl Tokenizer {
     /**
      * Obtains next token.
      */
-    pub fn get_next_token(&mut self) -> Result<Token, SyntaxError> {
+    pub fn get_next_token(&mut self) -> Result<Token> {
         if !self.has_tokens() {
             return Ok(Token {
                 token_type: TokenType::EOF,
@@ -195,13 +196,8 @@ impl Tokenizer {
             }
         }
 
-        Err(SyntaxError {
-            message: format(format_args!("Unexpected token: {}", self.content_string.chars().nth(self.cursor).unwrap())),
-        })
+        Err(Error::Syntax(
+            format(format_args!("Unexpected token: {}", self.content_string.chars().nth(self.cursor).unwrap()))
+        ))
     }
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct SyntaxError {
-    pub message: String,
 }

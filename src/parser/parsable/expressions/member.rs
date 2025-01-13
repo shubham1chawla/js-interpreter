@@ -1,9 +1,9 @@
-use eatable::Eatable;
-use identifier::IdentifierParsable;
-use primary::PrimaryExpressionParsable;
-use statements::expression::ExpressionStatementParsable;
+use crate::prelude::*;
 
-use super::*;
+use super::eatable::Eatable;
+use super::identifier::IdentifierParsable;
+use super::primary::PrimaryExpressionParsable;
+use super::statements::expression::ExpressionStatementParsable;
 
 pub trait MemberExpressionParsable {
     /**
@@ -13,11 +13,11 @@ pub trait MemberExpressionParsable {
      *  | MemberExpression '[' Expression ']'
      *  ;
      */
-    fn member_expression(&mut self) -> Result<Tree, SyntaxError>;
+    fn member_expression(&mut self) -> Result<Tree>;
 }
 
 impl MemberExpressionParsable for Parser {
-    fn member_expression(&mut self) -> Result<Tree, SyntaxError> {
+    fn member_expression(&mut self) -> Result<Tree> {
         let mut object = self.primary_expression()?;
 
         while self.lookahead.token_type == TokenType::Dot || self.lookahead.token_type == TokenType::SquareBracketOpen {
@@ -53,9 +53,8 @@ impl MemberExpressionParsable for Parser {
 
 #[cfg(test)]
 mod tests {
-    use expressions::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::parsable::tests::*;
 
     #[test]
     fn test_parse_non_computed_member_expression() {
