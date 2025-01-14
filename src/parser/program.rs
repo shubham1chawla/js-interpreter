@@ -13,25 +13,24 @@ pub trait ProgramParsable {
 
 impl ProgramParsable for Parser {
     fn program(&mut self) -> Result<Tree> {
-        let statement_list = self.statement_list(TokenType::EOF)?;
-        Ok(Tree::Program { body: Box::new(statement_list) })
+        let body = self.statement_list(TokenType::Eof)?;
+        Ok(Tree::Program { body })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::parsable::tests::assert_tree;
-
-    use super::*;
+    use crate::prelude::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_single_line_comments() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
                 }
-            ]), 
+            ], 
         };
         assert_tree(expected, "// Comment \n 42;");
     }
@@ -39,11 +38,11 @@ mod tests {
     #[test]
     fn test_parse_multi_line_comments() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
                 }
-            ]), 
+            ], 
         };
         let content_string = "\
         /* Multi-line comment \n\
@@ -55,7 +54,7 @@ mod tests {
 
     #[test]
     fn test_parse_empty_content() {
-        let expected = Tree::Program { body: Box::new(vec![]) };
+        let expected = Tree::Program { body: vec![] };
         assert_tree(expected, "");
     }
 }

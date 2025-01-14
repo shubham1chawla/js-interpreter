@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::expressions::assignment::AssignmentExpressionParsable;
 
 pub trait ExpressionStatementParsable {

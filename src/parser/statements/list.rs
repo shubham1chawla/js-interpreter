@@ -69,19 +69,19 @@ impl StatementListParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_statement_list() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
                 },
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
                 }
-            ]),
+            ],
         };
         assert_tree(expected, "42;\"Hello\";");
     }

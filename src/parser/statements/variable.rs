@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::expressions::assignment::AssignmentExpressionParsable;
 use super::identifier::IdentifierParsable;
 
@@ -52,7 +51,7 @@ impl VariableStatementParsable for Parser {
     fn variable_statement_init(&mut self) -> Result<Tree> {
         self.eat(TokenType::LetKeyword)?;
         let declarations = self.variable_declaration_list()?;
-        Ok(Tree::VariableStatement { declarations: Box::new(declarations) })
+        Ok(Tree::VariableStatement { declarations })
     }
 
     fn variable_declaration_list(&mut self) -> Result<Vec<Tree>> {
@@ -91,21 +90,21 @@ impl VariableStatementParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_no_init_variable_statement() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::VariableStatement { 
-                    declarations: Box::new(vec![
+                    declarations: vec![
                         Tree::VariableDeclaration {
                             identifier: Box::new(Tree::Identifier { name: String::from("y") }),
                             init: Box::new(None),
                         },
-                    ]),
+                    ],
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "let y;");
     }
@@ -113,16 +112,16 @@ mod tests {
     #[test]
     fn test_parse_simple_variable_statement() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::VariableStatement { 
-                    declarations: Box::new(vec![
+                    declarations: vec![
                         Tree::VariableDeclaration {
                             identifier: Box::new(Tree::Identifier { name: String::from("str") }),
                             init: Box::new(Some(Tree::StringLiteral { value: String::from("Hello") })),
                         },
-                    ]),
+                    ],
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "let str = 'Hello';");
     }
@@ -130,9 +129,9 @@ mod tests {
     #[test]
     fn test_parse_multiple_no_init_variable_statement() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::VariableStatement { 
-                    declarations: Box::new(vec![
+                    declarations: vec![
                         Tree::VariableDeclaration {
                             identifier: Box::new(Tree::Identifier { name: String::from("a") }),
                             init: Box::new(None),
@@ -141,9 +140,9 @@ mod tests {
                             identifier: Box::new(Tree::Identifier { name: String::from("b") }),
                             init: Box::new(None),
                         },
-                    ]),
+                    ],
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "let a, b;");
     }
@@ -151,9 +150,9 @@ mod tests {
     #[test]
     fn test_parse_multiple_variable_statement() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::VariableStatement { 
-                    declarations: Box::new(vec![
+                    declarations: vec![
                         Tree::VariableDeclaration {
                             identifier: Box::new(Tree::Identifier { name: String::from("c") }),
                             init: Box::new(None),
@@ -162,9 +161,9 @@ mod tests {
                             identifier: Box::new(Tree::Identifier { name: String::from("d") }),
                             init: Box::new(Some(Tree::NumericLiteral { value: 42.0 })),
                         },
-                    ]),
+                    ],
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "let c, d = 42;");
     }
@@ -172,9 +171,9 @@ mod tests {
     #[test]
     fn test_parse_chained_variable_statement_1() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::VariableStatement { 
-                    declarations: Box::new(vec![
+                    declarations: vec![
                         Tree::VariableDeclaration {
                             identifier: Box::new(Tree::Identifier { name: String::from("x") }),
                             init: Box::new(Some(Tree::AssignmentExpression {
@@ -183,9 +182,9 @@ mod tests {
                                 right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                             })),
                         },
-                    ]),
+                    ],
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "let x = y = 42;");
     }
@@ -193,9 +192,9 @@ mod tests {
     #[test]
     fn test_parse_chained_variable_statement_2() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::VariableStatement { 
-                    declarations: Box::new(vec![
+                    declarations: vec![
                         Tree::VariableDeclaration {
                             identifier: Box::new(Tree::Identifier { name: String::from("x") }),
                             init: Box::new(Some(Tree::AssignmentExpression {
@@ -204,9 +203,9 @@ mod tests {
                                 right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                             })),
                         },
-                    ]),
+                    ],
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "let x = y -= 42;");
     }

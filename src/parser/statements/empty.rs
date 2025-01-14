@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
-
 pub trait EmptyStatementParsable {
     /**
      * EmptyStatement
@@ -21,14 +19,14 @@ impl EmptyStatementParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_empty_statement() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::EmptyStatement,
-            ]),
+            ],
         };
         assert_tree(expected, ";");
     }
@@ -36,7 +34,7 @@ mod tests {
     #[test]
     fn test_parse_empty_statements() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::EmptyStatement,
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
@@ -45,7 +43,7 @@ mod tests {
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
                 }
-            ]),
+            ],
         };
         assert_tree(expected, ";\n42;\n;\n'Hello';");
     }

@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::expression::ExpressionStatementParsable;
 use super::list::StatementListParsable;
 
@@ -42,18 +41,18 @@ impl IfStatementParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_no_alternate_simple_if_statement() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::IfStatement {
                     test: Box::new(Tree::Identifier { name: String::from("x") }),
-                    consequent: Box::new(Tree::BlockStatement { body: Box::new(vec![]) }),
+                    consequent: Box::new(Tree::BlockStatement { body: vec![] }),
                     alternate: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "if (x) {}");
     }
@@ -61,7 +60,7 @@ mod tests {
     #[test]
     fn test_parse_simple_if_statement() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::IfStatement {
                     test: Box::new(Tree::Identifier { name: String::from("x") }),
                     consequent: Box::new(Tree::ExpressionStatement {
@@ -79,7 +78,7 @@ mod tests {
                         }),
                     })),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "if (x) x += 1; else x = 42;");
     }
@@ -87,7 +86,7 @@ mod tests {
     #[test]
     fn test_parse_chained_if_statement() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::IfStatement {
                     test: Box::new(Tree::Identifier { name: String::from("x") }),
                     consequent: Box::new(Tree::IfStatement {
@@ -115,7 +114,7 @@ mod tests {
                         }),
                     })),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "if (x) if (y) x += y; else y = 42; else x = 10;");
     }
@@ -123,7 +122,7 @@ mod tests {
     #[test]
     fn test_parse_else_if_if_statement() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::IfStatement {
                     test: Box::new(Tree::Identifier { name: String::from("x") }),
                     consequent: Box::new(Tree::ExpressionStatement {
@@ -143,7 +142,7 @@ mod tests {
                             }),
                         }),
                         alternate: Box::new(Some(Tree::BlockStatement {
-                            body: Box::new(vec![
+                            body: vec![
                                 Tree::ExpressionStatement {
                                     expression: Box::new(Tree::AssignmentExpression {
                                         operator: String::from("="),
@@ -158,11 +157,11 @@ mod tests {
                                         right: Box::new(Tree::NumericLiteral { value: 10.0 })
                                     }),
                                 }
-                            ]),
+                            ],
                         })),
                     })),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "if (x) x += 42; else if (y) y += 42; else { x = 42; y = 10; }");
     }

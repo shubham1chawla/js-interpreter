@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
 use super::block::BlockStatementParsable;
-use super::eatable::Eatable;
 use super::expressions::assignment::AssignmentExpressionParsable;
 use super::function::FunctionDeclarationParsable;
 use super::identifier::IdentifierParsable;
@@ -121,7 +120,7 @@ impl ClassDeclarationParsable for Parser {
 
         self.eat(TokenType::CurlyBracketClose)?;
 
-        Ok(Tree::ClassBody { body: Box::new(statements) })
+        Ok(Tree::ClassBody { body: statements })
     }
 
     fn class_statement_list(&mut self) -> Result<Vec<Tree>> {
@@ -160,7 +159,7 @@ impl ClassDeclarationParsable for Parser {
         Ok(Tree::ConstructorDefinition {
             value: Box::new(Tree::FunctionExpression {
                 identifier: Box::new(None),
-                params: Box::new(params),
+                params,
                 body: Box::new(body),
             }),
         })
@@ -182,7 +181,7 @@ impl ClassDeclarationParsable for Parser {
             key: Box::new(identifier),
             value: Box::new(Tree::FunctionExpression {
                 identifier: Box::new(None),
-                params: Box::new(vec![]),
+                params: vec![],
                 body: Box::new(body),
             }),
         })
@@ -205,9 +204,7 @@ impl ClassDeclarationParsable for Parser {
             key: Box::new(identifier),
             value: Box::new(Tree::FunctionExpression {
                 identifier: Box::new(None),
-                params: Box::new(vec![
-                    param,
-                ]),
+                params: vec![param],
                 body: Box::new(body),
             }),
         })
@@ -230,7 +227,7 @@ impl ClassDeclarationParsable for Parser {
             key: Box::new(identifier),
             value: Box::new(Tree::FunctionExpression {
                 identifier: Box::new(None),
-                params: Box::new(params),
+                params,
                 body: Box::new(body),
             }),
         })
@@ -267,20 +264,20 @@ impl ClassDeclarationParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_class_declaration() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ClassDeclaration {
                     idenifier: Box::new(Tree::Identifier { name: String::from("Point") }),
                     body: Box::new(Tree::ClassBody {
-                        body: Box::new(vec![]),
+                        body: vec![],
                     }),
                     super_class: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "class Point{}");
     }
@@ -288,15 +285,15 @@ mod tests {
     #[test]
     fn test_parse_extended_class_declaration() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ClassDeclaration {
                     idenifier: Box::new(Tree::Identifier { name: String::from("Point3D") }),
                     body: Box::new(Tree::ClassBody {
-                        body: Box::new(vec![]),
+                        body: vec![],
                     }),
                     super_class: Box::new(Some(Tree::Identifier { name: String::from("Point") })),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "class Point3D extends Point{}");
     }
@@ -304,11 +301,11 @@ mod tests {
     #[test]
     fn test_parse_property_definition_class_declaration() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ClassDeclaration {
                     idenifier: Box::new(Tree::Identifier { name: String::from("Point") }),
                     body: Box::new(Tree::ClassBody {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::PropertyDefinition {
                                 key: Box::new(Tree::Identifier { name: String::from("x") }),
                                 value: Box::new(Some(Tree::NumericLiteral { value: 10.0 })),
@@ -317,11 +314,11 @@ mod tests {
                                 key: Box::new(Tree::Identifier { name: String::from("y") }),
                                 value: Box::new(None),
                             },
-                        ]),
+                        ],
                     }),
                     super_class: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "
             class Point {
@@ -334,20 +331,20 @@ mod tests {
     #[test]
     fn test_parse_constructor_class_declaration() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ClassDeclaration {
                     idenifier: Box::new(Tree::Identifier { name: String::from("Point") }),
                     body: Box::new(Tree::ClassBody {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::ConstructorDefinition {
                                 value: Box::new(Tree::FunctionExpression {
                                     identifier: Box::new(None),
-                                    params: Box::new(vec![
+                                    params: vec![
                                         Tree::Identifier { name: String::from("x") },
                                         Tree::Identifier { name: String::from("y") },
-                                    ]),
+                                    ],
                                     body: Box::new(Tree::BlockStatement {
-                                        body: Box::new(vec![
+                                        body: vec![
                                             Tree::ExpressionStatement { 
                                                 expression: Box::new(Tree::AssignmentExpression {
                                                     operator: String::from("="),
@@ -370,15 +367,15 @@ mod tests {
                                                     right: Box::new(Tree::Identifier { name: String::from("y") }),
                                                 }),
                                             },
-                                        ]),
+                                        ],
                                     }),
                                 }),
                             },
-                        ]),
+                        ],
                     }),
                     super_class: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "
             class Point {
@@ -393,30 +390,30 @@ mod tests {
     #[test]
     fn test_parse_getter_class_declaration() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ClassDeclaration {
                     idenifier: Box::new(Tree::Identifier { name: String::from("Point") }),
                     body: Box::new(Tree::ClassBody {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::GetterDefinition {
                                 key: Box::new(Tree::Identifier { name: String::from("x") }),
                                 value: Box::new(Tree::FunctionExpression {
                                     identifier: Box::new(None),
-                                    params: Box::new(vec![]),
+                                    params: vec![],
                                     body: Box::new(Tree::BlockStatement {
-                                        body: Box::new(vec![
+                                        body: vec![
                                             Tree::ReturnStatement {
                                                 argument: Box::new(Some(Tree::Identifier { name: String::from("x") })),
                                             },
-                                        ]),
+                                        ],
                                     }),
                                 }),
                             },
-                        ]),
+                        ],
                     }),
                     super_class: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "
             class Point {
@@ -438,20 +435,20 @@ mod tests {
     #[test]
     fn test_parse_setter_class_declaration() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ClassDeclaration {
                     idenifier: Box::new(Tree::Identifier { name: String::from("Point") }),
                     body: Box::new(Tree::ClassBody {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::SetterDefinition {
                                 key: Box::new(Tree::Identifier { name: String::from("x") }),
                                 value: Box::new(Tree::FunctionExpression {
                                     identifier: Box::new(None),
-                                    params: Box::new(vec![
+                                    params: vec![
                                         Tree::Identifier { name: String::from("y") },
-                                    ]),
+                                    ],
                                     body: Box::new(Tree::BlockStatement {
-                                        body: Box::new(vec![
+                                        body: vec![
                                             Tree::ExpressionStatement {
                                                 expression: Box::new(Tree::AssignmentExpression {
                                                     operator: String::from("="),
@@ -463,15 +460,15 @@ mod tests {
                                                     right: Box::new(Tree::Identifier { name: String::from("y") }),
                                                 }),
                                             },
-                                        ]),
+                                        ],
                                     }),
                                 }),
                             },
-                        ]),
+                        ],
                     }),
                     super_class: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "
             class Point {
@@ -503,20 +500,20 @@ mod tests {
     #[test]
     fn test_parse_method_definition_class_declaration() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ClassDeclaration {
                     idenifier: Box::new(Tree::Identifier { name: String::from("Point") }),
                     body: Box::new(Tree::ClassBody {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::MethodDefinition {
                                 key: Box::new(Tree::Identifier { name: String::from("hello") }),
                                 value: Box::new(Tree::FunctionExpression {
                                     identifier: Box::new(None),
-                                    params: Box::new(vec![
+                                    params: vec![
                                         Tree::Identifier { name: String::from("name") },
-                                    ]),
+                                    ],
                                     body: Box::new(Tree::BlockStatement {
-                                        body: Box::new(vec![
+                                        body: vec![
                                             Tree::ReturnStatement {
                                                 argument: Box::new(Some(Tree::BinaryExpression {
                                                     operator: String::from("+"),
@@ -524,15 +521,15 @@ mod tests {
                                                     right: Box::new(Tree::Identifier { name: String::from("name") }),
                                                 })),
                                             },
-                                        ]),
+                                        ],
                                     }),
                                 }),
                             },
-                        ]),
+                        ],
                     }),
                     super_class: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "
             class Point {

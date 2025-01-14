@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::identifier::IdentifierParsable;
 use super::statements::block::BlockStatementParsable;
 use super::statements::function::FunctionDeclarationParsable;
@@ -34,7 +33,7 @@ impl FunctionExpressionParsable for Parser {
 
         Ok(Tree::FunctionExpression {
             identifier: Box::new(identifier),
-            params: Box::new(params),
+            params,
             body: Box::new(body),
         })
     }
@@ -43,23 +42,23 @@ impl FunctionExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_function_expression_1() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::AssignmentExpression {
                         operator: String::from("="),
                         left: Box::new(Tree::Identifier { name: String::from("square") }),
                         right: Box::new(Tree::FunctionExpression {
                             identifier: Box::new(None),
-                            params: Box::new(vec![
+                            params: vec![
                                 Tree::Identifier { name: String::from("x") },
-                            ]),
+                            ],
                             body: Box::new(Tree::BlockStatement {
-                                body: Box::new(vec![
+                                body: vec![
                                     Tree::ReturnStatement {
                                         argument: Box::new(Some(Tree::BinaryExpression {
                                             operator: String::from("*"),
@@ -67,12 +66,12 @@ mod tests {
                                             right: Box::new(Tree::Identifier { name: String::from("x") }),
                                         })),
                                     },
-                                ]),
+                                ],
                             }),
                         }),
                     }),
                 }
-            ]),
+            ],
         };
         assert_tree(expected, "square = function (x) { return x * x; };");
     }
@@ -80,21 +79,21 @@ mod tests {
     #[test]
     fn test_parse_simple_function_expression_2() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::AssignmentExpression {
                         operator: String::from("="),
                         left: Box::new(Tree::Identifier { name: String::from("x") }),
                         right: Box::new(Tree::FunctionExpression {
                             identifier: Box::new(Some(Tree::Identifier { name: String::from("y") })),
-                            params: Box::new(vec![]),
+                            params: vec![],
                             body: Box::new(Tree::BlockStatement {
-                                body: Box::new(vec![]),
+                                body: vec![],
                             }),
                         }),
                     }),
                 }
-            ]),
+            ],
         };
         assert_tree(expected, "x = function y() {};");
     }

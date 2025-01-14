@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
 use super::call::CallExpressionParsable;
-use super::eatable::Eatable;
 use super::member::MemberExpressionParsable;
 
 pub trait NewExpressionParsable {
@@ -18,7 +17,7 @@ impl NewExpressionParsable for Parser {
         self.eat(TokenType::NewKeyword)?;
         Ok(Tree::NewExpression {
             callee: Box::new(self.member_expression()?),
-            arguments: Box::new(self.arguments()?),
+            arguments: self.arguments()?,
         })
     }
 }
@@ -26,22 +25,22 @@ impl NewExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_new_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::NewExpression {
                         callee: Box::new(Tree::Identifier { name: String::from("Point") }),
-                        arguments: Box::new(vec![
+                        arguments: vec![
                             Tree::Identifier { name: String::from("x") },
                             Tree::Identifier { name: String::from("y") },
-                        ]),
+                        ],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "new Point(x, y);");
     }
@@ -49,7 +48,7 @@ mod tests {
     #[test]
     fn test_parse_namedspace_new_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::NewExpression {
                         callee: Box::new(Tree::MemberExpression {
@@ -57,10 +56,10 @@ mod tests {
                             property: Box::new(Tree::Identifier { name: String::from("MyClass") }),
                             computed: false,
                         }),
-                        arguments: Box::new(vec![]),
+                        arguments: vec![],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "new MyNamespace.MyClass();");
     }

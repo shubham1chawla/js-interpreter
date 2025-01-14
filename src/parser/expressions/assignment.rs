@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::logical::LogicalExpressionParsable;
 
 pub trait AssignmentExpressionParsable {
@@ -57,10 +56,7 @@ impl AssignmentExpressionParsable for Parser {
     }
 
     fn is_assignment_operator(&self) -> bool {
-        match self.lookahead.token_type {
-            TokenType::SimpleAssignmentOperator | TokenType::ComplexAssignmentOperator => true,
-            _ => false,
-        }
+        matches!(self.lookahead.token_type, TokenType::SimpleAssignmentOperator | TokenType::ComplexAssignmentOperator)
     }
 
     fn check_valid_assignment_target(&mut self, node: Tree) -> Result<Tree> {
@@ -83,12 +79,12 @@ impl AssignmentExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_assignment_expression_1() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("="), 
@@ -96,7 +92,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "num = 42;");
     }
@@ -104,7 +100,7 @@ mod tests {
     #[test]
     fn test_parse_simple_assignment_expression_2() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("="), 
@@ -112,7 +108,7 @@ mod tests {
                         right: Box::new(Tree::StringLiteral { value: String::from("Hello, World!") }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "str = 'Hello, World!';");
     }
@@ -120,7 +116,7 @@ mod tests {
     #[test]
     fn test_parse_simple_assignment_expression_3() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("="), 
@@ -132,7 +128,7 @@ mod tests {
                         }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "xyz = 2 + 3;");
     }
@@ -140,7 +136,7 @@ mod tests {
     #[test]
     fn test_parse_chained_assignment_expression() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("="), 
@@ -152,7 +148,7 @@ mod tests {
                         }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x = y = 42;");
     }
@@ -160,7 +156,7 @@ mod tests {
     #[test]
     fn test_parse_complex_assignment_expression_1() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("+="), 
@@ -168,7 +164,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "num += 42;");
     }
@@ -176,7 +172,7 @@ mod tests {
     #[test]
     fn test_parse_complex_assignment_expression_2() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("-="), 
@@ -184,7 +180,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "num -= 42;");
     }
@@ -192,7 +188,7 @@ mod tests {
     #[test]
     fn test_parse_complex_assignment_expression_3() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("*="), 
@@ -200,7 +196,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "num *= 42;");
     }
@@ -208,7 +204,7 @@ mod tests {
     #[test]
     fn test_parse_complex_assignment_expression_4() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::AssignmentExpression { 
                         operator: String::from("/="), 
@@ -216,7 +212,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                     }), 
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "num /= 42;");
     }
@@ -232,9 +228,9 @@ mod tests {
     #[test]
     fn test_parse_presidence_assignment_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::VariableStatement {
-                    declarations: Box::new(vec![
+                    declarations: vec![
                         Tree::VariableDeclaration {
                             identifier: Box::new(Tree::Identifier { name: String::from("isSomething") }),
                             init: Box::new(Some(Tree::BinaryExpression {
@@ -255,9 +251,9 @@ mod tests {
                                 right: Box::new(Tree::BooleanLiteral { value: true }),
                             })),
                         },
-                    ]),
+                    ],
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "let isSomething = 50 < value + 5 * 2 == true;");
     }

@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
 use super::additive::AdditiveExpressionParsable;
-use super::eatable::Eatable;
 
 pub trait RelationalExpressionParsable {
     /**
@@ -41,12 +40,12 @@ impl RelationalExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_relational_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::BinaryExpression {
                         operator: String::from(">="),
@@ -54,7 +53,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0, }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x >= 42;");
     }
@@ -62,7 +61,7 @@ mod tests {
     #[test]
     fn test_parse_complex_relational_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::AssignmentExpression {
                         operator: String::from("="),
@@ -82,7 +81,7 @@ mod tests {
                         }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "y = (x + 10) * 3 > 100;");
     }
@@ -90,17 +89,17 @@ mod tests {
     #[test]
     fn test_parse_relational_expression_if_statement() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::IfStatement {
                     test: Box::new(Tree::BinaryExpression {
                         operator: String::from("<"),
                         left: Box::new(Tree::Identifier { name: String::from("x") }),
                         right: Box::new(Tree::NumericLiteral { value: 42.0, }),
                     }),
-                    consequent: Box::new(Tree::BlockStatement { body: Box::new(vec![]) }),
+                    consequent: Box::new(Tree::BlockStatement { body: vec![] }),
                     alternate: Box::new(None),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "if (x < 42) {}");
     }

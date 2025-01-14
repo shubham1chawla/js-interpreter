@@ -28,7 +28,7 @@ pub enum Tree {
      *  | ForStatement
      *  ;
      */
-    Program{ body: Box<Vec<Tree>> },
+    Program{ body: Vec<Tree> },
 
     /**
      * WhileStatement
@@ -66,7 +66,7 @@ pub enum Tree {
      *  | FormalParameterList ',' Identifier
      *  ;
      */
-    FunctionDeclaration{ identifier: Box<Tree>, params: Box<Vec<Tree>>, body: Box<Tree> },
+    FunctionDeclaration{ identifier: Box<Tree>, params: Vec<Tree>, body: Box<Tree> },
 
     /**
      * ReturnStatement
@@ -87,7 +87,7 @@ pub enum Tree {
      *  : '{' OptStatementList '}'
      *  ;
      */
-    BlockStatement{ body: Box<Vec<Tree>> },
+    BlockStatement{ body: Vec<Tree> },
 
     /**
      * VariableStatement
@@ -103,7 +103,7 @@ pub enum Tree {
      *  | VariableDeclarationList ',' VariableDeclaration
      *  ;
      */
-    VariableStatement{ declarations: Box<Vec<Tree>> },
+    VariableStatement{ declarations: Vec<Tree> },
 
     /**
      * VariableDeclaration
@@ -153,7 +153,7 @@ pub enum Tree {
      *  | PropertyDefinition
      *  ;
      */
-    ClassBody{ body: Box<Vec<Tree>> },
+    ClassBody{ body: Vec<Tree> },
 
     /**
      * ConstructorDefinition
@@ -286,7 +286,7 @@ pub enum Tree {
      *  | ArgumentList ',' AssignmentExpression
      *  ;
      */
-    CallExpression{ callee: Box<Tree>, arguments: Box<Vec<Tree>> },
+    CallExpression{ callee: Box<Tree>, arguments: Vec<Tree> },
 
     /**
      * MemberExpression
@@ -323,14 +323,14 @@ pub enum Tree {
      *  : 'function' OptIdentifier '(' OptFormalParameterList ')' BlockStatement
      *  ;
      */
-    FunctionExpression{ identifier: Box<Option<Tree>>, params: Box<Vec<Tree>>, body: Box<Tree> },
+    FunctionExpression{ identifier: Box<Option<Tree>>, params: Vec<Tree>, body: Box<Tree> },
 
     /**
      * NewExpression
      *  : 'new' MemberExpression Arguments
      *  ;
      */
-    NewExpression{ callee: Box<Tree>, arguments: Box<Vec<Tree>> },
+    NewExpression{ callee: Box<Tree>, arguments: Vec<Tree> },
 
     /**
      * NumericLiteral

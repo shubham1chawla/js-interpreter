@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::lhs::LeftHandSideExpressionParsable;
 
 pub trait UnaryExpressionParsable {
@@ -34,19 +33,19 @@ impl UnaryExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_unary_expression_1() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::UnaryExpression {
                         operator: String::from("!"),
                         argument: Box::new(Tree::Identifier { name: String::from("x") }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "!x;");
     }
@@ -54,14 +53,14 @@ mod tests {
     #[test]
     fn test_parse_simple_unary_expression_2() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::UnaryExpression {
                         operator: String::from("+"),
                         argument: Box::new(Tree::Identifier { name: String::from("x") }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "+x;");
     }
@@ -69,14 +68,14 @@ mod tests {
     #[test]
     fn test_parse_simple_unary_expression_3() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::UnaryExpression {
                         operator: String::from("-"),
                         argument: Box::new(Tree::Identifier { name: String::from("x") }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "-x;");
     }
@@ -84,7 +83,7 @@ mod tests {
     #[test]
     fn test_parse_complex_unary_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::AssignmentExpression {
                         operator: String::from("="),
@@ -115,7 +114,7 @@ mod tests {
                         }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "y = !(a > 20 || b != null) && c > 0;");
     }

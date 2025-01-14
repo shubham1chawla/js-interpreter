@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
 use super::assignment::AssignmentExpressionParsable;
-use super::eatable::Eatable;
 use super::member::MemberExpressionParsable;
 
 pub trait CallExpressionParsable {
@@ -48,7 +47,7 @@ impl CallExpressionParsable for Parser {
 
         // See if we have a call expression
         if self.lookahead.token_type == TokenType::CircleBracketOpen {
-            return Ok(self.call_expression(member)?);
+            return self.call_expression(member);
         }
 
         // Simple member expression
@@ -58,7 +57,7 @@ impl CallExpressionParsable for Parser {
     fn call_expression(&mut self, callee: Tree) -> Result<Tree> {
         let mut call_expression = Tree::CallExpression {
             callee: Box::new(callee),
-            arguments: Box::new(self.arguments()?),
+            arguments: self.arguments()?,
         };
 
         // Recursively checking if chained functions are called -> callback()();
@@ -102,21 +101,21 @@ impl CallExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_call_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::CallExpression {
                         callee: Box::new(Tree::Identifier { name: String::from("foo") }),
-                        arguments: Box::new(vec![
+                        arguments: vec![
                             Tree::Identifier { name: String::from("x") },
-                        ]),
+                        ],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "foo(x);");
     }
@@ -124,19 +123,19 @@ mod tests {
     #[test]
     fn test_parse_chained_call_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::CallExpression {
                         callee: Box::new(Tree::CallExpression {
                             callee: Box::new(Tree::Identifier { name: String::from("foo") }),
-                            arguments: Box::new(vec![
+                            arguments: vec![
                                 Tree::Identifier { name: String::from("x") },
-                            ]),
+                            ],
                         }),
-                        arguments: Box::new(vec![]),
+                        arguments: vec![],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "foo(x)();");
     }
@@ -144,7 +143,7 @@ mod tests {
     #[test]
     fn test_parse_complex_call_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::CallExpression {
                         callee: Box::new(Tree::MemberExpression {
@@ -152,7 +151,7 @@ mod tests {
                             property: Box::new(Tree::Identifier { name: String::from("log") }),
                             computed: false,
                         }),
-                        arguments: Box::new(vec![
+                        arguments: vec![
                             Tree::BinaryExpression {
                                 operator: String::from(">"),
                                 left: Box::new(Tree::Identifier { name: String::from("x") }),
@@ -163,10 +162,10 @@ mod tests {
                                 left: Box::new(Tree::Identifier { name: String::from("y") }),
                                 right: Box::new(Tree::BooleanLiteral { value: true }),
                             },
-                        ]),
+                        ],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "console.log(x > 42, y = true);");
     }

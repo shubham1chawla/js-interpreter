@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
-
 pub trait LiteralParsable {
     /**
      * Literal
@@ -85,7 +83,7 @@ impl LiteralParsable for Parser {
 
         // Removing quotes from start and end
         let value = String::from(&token.value[1..(token.value.len()-1)]);
-        return Ok(Tree::StringLiteral { value })
+        Ok(Tree::StringLiteral { value })
     }
 
     fn boolean_literal(&mut self) -> Result<Tree> {
@@ -119,16 +117,16 @@ impl LiteralParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_literal_numeric() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
                 }
-            ]), 
+            ], 
         };
         assert_tree(expected, "42;");
     }
@@ -136,29 +134,29 @@ mod tests {
     #[test]
     fn test_parse_literal_string() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::StringLiteral { value: "Hello".to_owned() } ),
                 }
-            ]), 
+            ], 
         };
         assert_tree(expected, "\"Hello\";");
     }
 
     #[test]
     fn test_parse_missing_semicolon() {
-        let expected = Error::Syntax("Unexpected token EOF, expected SemiColon!".to_string());
+        let expected = Error::Syntax("Unexpected token Eof, expected SemiColon!".to_string());
         assert_syntax_error(expected, "42");
     }
 
     #[test]
     fn test_parse_literal_numeric_with_whitespaces() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::NumericLiteral { value: 42.0 } ),
                 }
-            ]), 
+            ], 
         };
         assert_tree(expected, "    42;");
     }
@@ -166,11 +164,11 @@ mod tests {
     #[test]
     fn test_parse_literal_string_with_whitespaces() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::StringLiteral { value: "  Hello, World!  ".to_owned() } ),
                 }
-            ]), 
+            ], 
         };
         assert_tree(expected, "  \"  Hello, World!  \";  ");
     }
@@ -178,11 +176,11 @@ mod tests {
     #[test]
     fn test_parse_true_literal() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::BooleanLiteral { value: true }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "true;");
     }
@@ -190,11 +188,11 @@ mod tests {
     #[test]
     fn test_parse_false_literal() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::BooleanLiteral { value: false }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "false;");
     }
@@ -202,11 +200,11 @@ mod tests {
     #[test]
     fn test_parse_null_literal() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::NullLiteral),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "null;");
     }
@@ -214,11 +212,11 @@ mod tests {
     #[test]
     fn test_parse_this_literal() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::ThisLiteral),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "this;");
     }
@@ -226,11 +224,11 @@ mod tests {
     #[test]
     fn test_parse_super_literal() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::SuperLiteral),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "super;");
     }

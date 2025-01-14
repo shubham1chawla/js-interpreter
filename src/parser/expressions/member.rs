@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::identifier::IdentifierParsable;
 use super::primary::PrimaryExpressionParsable;
 use super::statements::expression::ExpressionStatementParsable;
@@ -54,12 +53,12 @@ impl MemberExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_non_computed_member_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::MemberExpression {
                         object: Box::new(Tree::Identifier { name: String::from("str") }),
@@ -67,7 +66,7 @@ mod tests {
                         computed: false,
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "str.length;");
     }
@@ -75,7 +74,7 @@ mod tests {
     #[test]
     fn test_parse_assigning_non_computed_member_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::AssignmentExpression {
                         operator: String::from("="),
@@ -87,7 +86,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 1.0 }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x.y = 1;");
     }
@@ -95,7 +94,7 @@ mod tests {
     #[test]
     fn test_parse_assigning_computed_member_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::AssignmentExpression {
                         operator: String::from("="),
@@ -107,7 +106,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 1.0 }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "arr[0] = 1;");
     }
@@ -115,7 +114,7 @@ mod tests {
     #[test]
     fn test_parse_chained_member_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::MemberExpression {
                         object: Box::new(Tree::MemberExpression {
@@ -131,7 +130,7 @@ mod tests {
                         computed: true,
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "a.b.c['d'];");
     }

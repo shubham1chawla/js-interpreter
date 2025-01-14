@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::relational::RelationalExpressionParsable;
 
 pub trait EqualityExpressionParsable {
@@ -41,12 +40,12 @@ impl EqualityExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_equality_expression_1() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::BinaryExpression {
                         operator: String::from("=="),
@@ -58,7 +57,7 @@ mod tests {
                         right: Box::new(Tree::BooleanLiteral { value: true, }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x > 0 == true;");
     }
@@ -66,7 +65,7 @@ mod tests {
     #[test]
     fn test_parse_simple_equality_expression_2() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::BinaryExpression {
                         operator: String::from("!="),
@@ -78,7 +77,7 @@ mod tests {
                         right: Box::new(Tree::BooleanLiteral { value: false, }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x <= 0 != false;");
     }
@@ -86,7 +85,7 @@ mod tests {
     #[test]
     fn test_parse_simple_equality_expression_3() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::BinaryExpression {
                         operator: String::from("!="),
@@ -94,7 +93,7 @@ mod tests {
                         right: Box::new(Tree::BooleanLiteral { value: false, }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "true != false;");
     }

@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
 use super::block::BlockStatementParsable;
-use super::eatable::Eatable;
 use super::expression::ExpressionStatementParsable;
 use super::identifier::IdentifierParsable;
 
@@ -48,7 +47,7 @@ impl FunctionDeclarationParsable for Parser {
 
         Ok(Tree::FunctionDeclaration {
             identifier: Box::new(identifier),
-            params: Box::new(params),
+            params,
             body: Box::new(body),
         })
     }
@@ -86,18 +85,18 @@ impl FunctionDeclarationParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_function_declaration_1() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::FunctionDeclaration {
                     identifier: Box::new(Tree::Identifier { name: String::from("hello") }),
-                    params: Box::new(vec![]),
-                    body: Box::new(Tree::BlockStatement { body: Box::new(vec![]) }),
+                    params: vec![],
+                    body: Box::new(Tree::BlockStatement { body: vec![] }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "function hello() {}");
     }
@@ -105,15 +104,15 @@ mod tests {
     #[test]
     fn test_parse_function_declaration_2() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::FunctionDeclaration {
                     identifier: Box::new(Tree::Identifier { name: String::from("multiply") }),
-                    params: Box::new(vec![
+                    params: vec![
                         Tree::Identifier { name: String::from("x") },
                         Tree::Identifier { name: String::from("y") },
-                    ]),
+                    ],
                     body: Box::new(Tree::BlockStatement {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::ReturnStatement {
                                 argument: Box::new(Some(Tree::BinaryExpression {
                                     operator: String::from("*"),
@@ -121,10 +120,10 @@ mod tests {
                                     right: Box::new(Tree::Identifier { name: String::from("y") }),
                                 })),
                             },
-                        ]),
+                        ],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "function multiply(x, y) { return x * y; }");
     }
@@ -132,24 +131,24 @@ mod tests {
     #[test]
     fn test_parse_function_declaration_3() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::FunctionDeclaration {
                     identifier: Box::new(Tree::Identifier { name: String::from("test") }),
-                    params: Box::new(vec![]),
+                    params: vec![],
                     body: Box::new(Tree::BlockStatement {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::VariableStatement {
-                                declarations: Box::new(vec![
+                                declarations: vec![
                                     Tree::VariableDeclaration {
                                         identifier: Box::new(Tree::Identifier { name: String::from("x") }),
                                         init: Box::new(Some(Tree::NumericLiteral { value: 10.0 })),
                                     },
-                                ]),
+                                ],
                             },
-                        ]),
+                        ],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "function test() { let x = 10; }");
     }
@@ -157,19 +156,19 @@ mod tests {
     #[test]
     fn test_parse_function_declaration_4() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::FunctionDeclaration {
                     identifier: Box::new(Tree::Identifier { name: String::from("test") }),
-                    params: Box::new(vec![]),
+                    params: vec![],
                     body: Box::new(Tree::BlockStatement {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::ReturnStatement {
                                 argument: Box::new(None),
                             },
-                        ]),
+                        ],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "function test() { return; }");
     }

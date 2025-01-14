@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::expression::ExpressionStatementParsable;
 use super::list::StatementListParsable;
 use super::variable::VariableStatementParsable;
@@ -130,17 +129,17 @@ impl IterationStatementParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_while_statement_1() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::WhileStatement {
                     test: Box::new(Tree::BooleanLiteral { value: true }),
                     body: Box::new(Tree::EmptyStatement),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "while (true);");
     }
@@ -148,7 +147,7 @@ mod tests {
     #[test]
     fn test_parse_while_statement_2() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::WhileStatement {
                     test: Box::new(Tree::BinaryExpression {
                         operator: String::from(">"),
@@ -156,7 +155,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                     }),
                     body: Box::new(Tree::BlockStatement {
-                        body: Box::new(vec![
+                        body: vec![
                             Tree::ExpressionStatement {
                                 expression: Box::new(Tree::AssignmentExpression {
                                     operator: String::from("-="),
@@ -164,10 +163,10 @@ mod tests {
                                     right: Box::new(Tree::NumericLiteral { value: 1.0 }),
                                 }),
                             },
-                        ]),
+                        ],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "while (x > 42) { x -= 1; }");
     }
@@ -175,7 +174,7 @@ mod tests {
     #[test]
     fn test_parse_do_while_statement_1() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::DoWhileStatement {
                     body: Box::new(Tree::ExpressionStatement {
                         expression: Box::new(Tree::AssignmentExpression {
@@ -190,7 +189,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 42.0 }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "do x += 1; while (x < 42);");
     }
@@ -198,14 +197,14 @@ mod tests {
     #[test]
     fn test_parse_for_statement_1() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ForStatement {
                     init: Box::new(None),
                     test: Box::new(None),
                     update: Box::new(None),
                     body: Box::new(Tree::EmptyStatement),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "for (;;);");
     }
@@ -213,10 +212,10 @@ mod tests {
     #[test]
     fn test_parse_for_statement_2() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ForStatement {
                     init: Box::new(Some(Tree::VariableStatement {
-                        declarations: Box::new(vec![
+                        declarations: vec![
                             Tree::VariableDeclaration {
                                 identifier: Box::new(Tree::Identifier { name: String::from("i") }),
                                 init: Box::new(Some(Tree::NumericLiteral { value: 0.0 })),
@@ -225,7 +224,7 @@ mod tests {
                                 identifier: Box::new(Tree::Identifier { name: String::from("x") }),
                                 init: Box::new(Some(Tree::Identifier { name: String::from("y") })),
                             },
-                        ]),
+                        ],
                     })),
                     test: Box::new(Some(Tree::BinaryExpression {
                         operator: String::from("<"),
@@ -238,10 +237,10 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 1.0 }),
                     })),
                     body: Box::new(Tree::BlockStatement {
-                        body: Box::new(vec![]),
+                        body: vec![],
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "for (let i=0, x=y; i<10; i+=1) {}");
     }
@@ -249,7 +248,7 @@ mod tests {
     #[test]
     fn test_parse_for_statement_3() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ForStatement {
                     init: Box::new(Some(Tree::AssignmentExpression {
                         operator: String::from("="),
@@ -260,7 +259,7 @@ mod tests {
                     update: Box::new(None),
                     body: Box::new(Tree::EmptyStatement),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "for (x = 2;;);");
     }

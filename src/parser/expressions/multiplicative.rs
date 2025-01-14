@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::unary::UnaryExpressionParsable;
 
 pub trait MultiplicativeExpressionParsable {
@@ -41,12 +40,12 @@ impl MultiplicativeExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_multiplicative_binary_expressions() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::BinaryExpression { 
                         operator: String::from("*"), 
@@ -58,7 +57,7 @@ mod tests {
                         right: Box::new(Tree::NumericLiteral { value: 1.0 }),
                     }),
                 }
-            ]), 
+            ], 
         };
         assert_tree(expected, "3 / 2 * 1;");
     }
@@ -66,7 +65,7 @@ mod tests {
     #[test]
     fn test_parse_multiplicative_additive_binary_expressions() {
         let expected = Tree::Program { 
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement { 
                     expression: Box::new(Tree::BinaryExpression { 
                         operator: String::from("+"), 
@@ -78,7 +77,7 @@ mod tests {
                         })
                     }),
                 }
-            ]), 
+            ], 
         };
         assert_tree(expected, "3 + 2 / 1;");
     }

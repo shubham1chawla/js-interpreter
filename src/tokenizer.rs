@@ -6,7 +6,7 @@ use regex::Regex;
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
     // ----- SPECIAL -----
-    EOF,
+    Eof,
 
     // ----- LITERALS -----
     Number,
@@ -174,7 +174,7 @@ impl Tokenizer {
     pub fn get_next_token(&mut self) -> Result<Token> {
         if !self.has_tokens() {
             return Ok(Token {
-                token_type: TokenType::EOF,
+                token_type: TokenType::Eof,
                 value: String::new(),
             });
         }

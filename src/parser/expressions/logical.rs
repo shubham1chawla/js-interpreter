@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
 use super::equality::EqualityExpressionParsable;
 
 pub trait LogicalExpressionParsable {
@@ -72,12 +71,12 @@ impl LogicalExpressionParsable for Parser {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::parser::parsable::tests::*;
+    use crate::parser::tests::*;
 
     #[test]
     fn test_parse_simple_and_logical_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::LogicalExpression {
                         operator: String::from("&&"),
@@ -85,7 +84,7 @@ mod tests {
                         right: Box::new(Tree::Identifier { name: String::from("y") }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x && y;");
     }
@@ -93,7 +92,7 @@ mod tests {
     #[test]
     fn test_parse_simple_or_logical_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::LogicalExpression {
                         operator: String::from("||"),
@@ -101,7 +100,7 @@ mod tests {
                         right: Box::new(Tree::Identifier { name: String::from("y") }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x || y;");
     }
@@ -109,7 +108,7 @@ mod tests {
     #[test]
     fn test_parse_complex_logical_expression() {
         let expected = Tree::Program {
-            body: Box::new(vec![
+            body: vec![
                 Tree::ExpressionStatement {
                     expression: Box::new(Tree::LogicalExpression {
                         operator: String::from("||"),
@@ -133,7 +132,7 @@ mod tests {
                         }),
                     }),
                 },
-            ]),
+            ],
         };
         assert_tree(expected, "x > 0 || y < 0 && z == null;");
     }

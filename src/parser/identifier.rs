@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-use super::eatable::Eatable;
-
 pub trait IdentifierParsable {
     /**
      * Identifier
