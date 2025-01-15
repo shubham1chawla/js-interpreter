@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq)]
+use strum_macros::Display;
+
+#[derive(Debug, PartialEq, Display)]
 pub enum Tree {
     /**
      * Program
