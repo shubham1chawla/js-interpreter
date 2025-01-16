@@ -15,6 +15,7 @@ fn main() {
         2 - 7;
         '2' - (1 + 4);
         '10' * ('2' - 3 + (5 - 2 + 1));
+        '65.2' / (9 - '1');
     ";
 
     let mut parser = Parser::new(content_string.to_owned()).unwrap();

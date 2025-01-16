@@ -33,6 +33,7 @@ impl Evalable for Interpreter {
                     "+" => Ok(lvalue + rvalue),
                     "-" => Ok(lvalue - rvalue),
                     "*" => Ok(lvalue * rvalue),
+                    "/" => Ok(lvalue / rvalue),
                     _ => Err(Error::Runtime(
                         format(format_args!("Unknown operator: {operator}"))
                     )),
