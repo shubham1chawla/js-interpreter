@@ -1,56 +1,56 @@
 use crate::prelude::*;
 
-use std::fmt::format;
-
-use super::value::Value;
+use crate::interpreter::expressions::ExpressionEvalable;
+use crate::interpreter::literals::LiteralEvalable;
+use crate::interpreter::statements::StatementEvalable;
 
 pub trait Evalable {
     /**
-     * Recursively evaluates AST Tree nodes.
+     * Evaluates AST Tree set while constructing Interpreter instance.
      */
-    fn eval(&self, node: Tree) -> Result<Value>;
+    fn eval(&self) -> Result<Value>;
+
+    /**
+     * Evaluates arbitrary AST Tree node using provided Enviornment instance.
+     */
+    fn eval_tree(&self, tree: &Tree, env_ref: &EnvironmentRefCell) -> Result<Value>;
 }
 
 impl Evalable for Interpreter {
-    fn eval(&self, node: Tree) -> Result<Value> {
-        println!("> {node}");
-        match node {
+    fn eval(&self) -> Result<Value> {
+        self.eval_tree(&self.tree, &self.env)
+    }
+
+    fn eval_tree(&self, tree: &Tree, env_ref: &EnvironmentRefCell) -> Result<Value> {
+        let depth = self.increment_depth();
+
+        println!("{}> {tree}", " ".repeat(depth - 1));
+        let value = match tree {
             // ----- PROGRAM -----
             Tree::Program { body } => {
                 for statement in body {
-                    let result = self.eval(statement)?;
-                    println!("< {result:?}");
+                    self.eval_tree(statement, env_ref)?;
                 }
                 Ok(Value::Undefined)
             },
 
             // ----- EXPRESSIONS -----
-            Tree::BinaryExpression { operator, left, right } => {
-                // Reducing left and right operands
-                let lvalue = self.eval(*left)?;
-                let rvalue = self.eval(*right)?;
-                match operator.as_str() {
-                    "+" => Ok(lvalue + rvalue),
-                    "-" => Ok(lvalue - rvalue),
-                    "*" => Ok(lvalue * rvalue),
-                    "/" => Ok(lvalue / rvalue),
-                    _ => Err(Error::Runtime(
-                        format(format_args!("Unknown operator: {operator}"))
-                    )),
-                }
-            },
+            Tree::BinaryExpression { .. } => self.eval_expression(tree, env_ref),
 
             // ----- STATEMENTS -----
-            Tree::ExpressionStatement { expression } => self.eval(*expression),
+            Tree::ExpressionStatement { .. } 
+            | Tree::VariableStatement { .. } 
+            | Tree::VariableDeclaration { .. } => self.eval_statement(tree, env_ref),
 
             // ----- LITERALS -----
-            Tree::NumericLiteral { value } => Ok(Value::Number(value)),
-            Tree::StringLiteral { value } => Ok(Value::String(value)),
+            Tree::NumericLiteral { .. } 
+            | Tree::StringLiteral { .. } => self.eval_literals(tree),
 
             // ----- UNIMPLEMENTED -----
-            _ => Err(Error::Runtime(
-                format(format_args!("Unimplemented node: {}", node))
-            ))
-        }
+            _ => Err(Error::Runtime(format!("Unimplemented tree node: {tree}")))
+        }?;
+
+        self.decrement_depth();
+        Ok(value)
     }
 }
