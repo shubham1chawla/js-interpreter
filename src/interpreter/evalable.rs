@@ -15,6 +15,7 @@ impl Evalable for Interpreter {
     fn eval(&self, node: Tree) -> Result<Value> {
         println!("> {node}");
         match node {
+            // ----- PROGRAM -----
             Tree::Program { body } => {
                 for statement in body {
                     let result = self.eval(statement)?;
@@ -31,6 +32,7 @@ impl Evalable for Interpreter {
                 match operator.as_str() {
                     "+" => Ok(lvalue + rvalue),
                     "-" => Ok(lvalue - rvalue),
+                    "*" => Ok(lvalue * rvalue),
                     _ => Err(Error::Runtime(
                         format(format_args!("Unknown operator: {operator}"))
                     )),
