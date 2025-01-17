@@ -5,6 +5,7 @@ use std::cell::{Cell, RefCell};
 pub use evalable::Evalable;
 
 mod expressions;
+mod identifier;
 mod evalable;
 mod literals;
 mod statements;
@@ -14,7 +15,7 @@ mod statements;
  */
 pub struct Interpreter {
     tree: Tree,
-    env: EnvironmentRefCell,
+    env_ref: RefCell<Environment>,
     depth: Cell<usize>,
 }
 
@@ -23,10 +24,13 @@ impl Interpreter {
      * Creates a new interpreter with AST Tree.
      */
     pub fn new(tree: Tree) -> Self {
-        let env = EnvironmentBuilder::default().build().unwrap();
+        // Creating global environment
+        let env = EnvironmentBuilder::default()
+            .build()
+            .unwrap();
         Self {
             tree,
-            env: RefCell::new(env),
+            env_ref: RefCell::new(env),
             depth: Cell::new(0),
         }
     }

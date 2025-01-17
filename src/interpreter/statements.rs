@@ -7,11 +7,11 @@ pub trait StatementEvalable {
      * + VariableStatement
      * + VariableDeclaration
      */
-    fn eval_statement(&self, statement: &Tree, env_ref: &EnvironmentRefCell) -> Result<Value>;
+    fn eval_statement(&self, statement: &Tree, env_ref: &EnvRef) -> Result<Value>;
 }
 
 impl StatementEvalable for Interpreter {
-    fn eval_statement(&self, statement: &Tree, env_ref: &EnvironmentRefCell) -> Result<Value> {
+    fn eval_statement(&self, statement: &Tree, env_ref: &EnvRef) -> Result<Value> {
         let depth = self.depth.get();
         match statement {
             Tree::ExpressionStatement { expression } => self.eval_tree(expression, env_ref),

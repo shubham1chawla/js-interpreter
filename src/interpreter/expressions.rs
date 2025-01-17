@@ -5,11 +5,11 @@ pub trait ExpressionEvalable {
      * Evaluate expression AST Tree nodes.
      * + BinaryExpression
      */
-    fn eval_expression(&self, expr: &Tree, env_ref: &EnvironmentRefCell) -> Result<Value>;
+    fn eval_expression(&self, expr: &Tree, env_ref: &EnvRef) -> Result<Value>;
 }
 
 impl ExpressionEvalable for Interpreter {
-    fn eval_expression(&self, expr: &Tree, env_ref: &EnvironmentRefCell) -> Result<Value> {
+    fn eval_expression(&self, expr: &Tree, env_ref: &EnvRef) -> Result<Value> {
         match expr {
             Tree::BinaryExpression { operator, left, right } => {
                 // Reducing left and right operands
