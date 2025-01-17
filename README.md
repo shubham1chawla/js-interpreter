@@ -1,6 +1,6 @@
-# Javascript Parser
+# Javascript Parser & Tree-walk Interpreter
 
-This repository contains code to parse Javscript files, following tutorial by [Dmitry Soshnikov](http://dmitrysoshnikov.com/courses/parser-from-scratch/).
+This repository contains code to parse and interpret Javascript (JS) files, following a tutorial by [Dmitry Soshnikov](http://dmitrysoshnikov.com/).
 
 ## Grammar
 
