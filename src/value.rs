@@ -6,6 +6,7 @@ pub enum Value {
     String(String),
     Undefined,
     Nan,
+    Null,
     Infinity(bool), // +/- Infinity; true = -ve
 }
 
@@ -19,6 +20,7 @@ impl ops::Add for Value {
             (Value::Number(_), Value::Undefined) => Value::Nan,
             (Value::Number(_), Value::Nan) => Value::Nan,
             (Value::Number(_), Value::Infinity(neg)) => Value::Infinity(neg),
+            (Value::Number(a), Value::Null) => Value::Number(a),
  
             (Value::String(a), Value::Number(b)) => Value::String(format!("{a}{b}")),
             (Value::String(a), Value::String(b)) => Value::String(format!("{a}{b}")),
@@ -30,18 +32,21 @@ impl ops::Add for Value {
                 }
                 Value::String(format!("{a}Infinity"))
             },
+            (Value::String(a), Value::Null) => Value::String(format!("{a}null")),
  
             (Value::Undefined, Value::Number(_)) => Value::Nan,
             (Value::Undefined, Value::String(b)) => Value::String(format!("undefined{b}")),
             (Value::Undefined, Value::Undefined) => Value::Nan,
             (Value::Undefined, Value::Nan) => Value::Nan,
             (Value::Undefined, Value::Infinity(_)) => Value::Nan,
+            (Value::Undefined, Value::Null) => Value::Nan,
  
             (Value::Nan, Value::Number(_)) => Value::Nan,
             (Value::Nan, Value::String(b)) => Value::String(format!("NaN{b}")),
             (Value::Nan, Value::Undefined) => Value::Nan,
             (Value::Nan, Value::Nan) => Value::Nan,
             (Value::Nan, Value::Infinity(_)) => Value::Nan,
+            (Value::Nan, Value::Null) => Value::Nan,
 
             (Value::Infinity(neg), Value::Number(_)) => Value::Infinity(neg),
             (Value::Infinity(neg), Value::String(b)) => {
@@ -58,6 +63,14 @@ impl ops::Add for Value {
                 }
                 Value::Nan
             },
+            (Value::Infinity(neg), Value::Null) => Value::Infinity(neg),
+
+            (Value::Null, Value::Number(b)) => Value::Number(b),
+            (Value::Null, Value::String(b)) => Value::String(format!("null{b}")),
+            (Value::Null, Value::Undefined) => Value::Nan,
+            (Value::Null, Value::Nan) => Value::Nan,
+            (Value::Null, Value::Infinity(neg)) => Value::Infinity(neg),
+            (Value::Null, Value::Null) => Value::Number(0.0),
         }
     }
 }
@@ -80,6 +93,7 @@ impl ops::Sub for Value {
             (Value::Number(_), Value::Undefined) => Value::Nan,
             (Value::Number(_), Value::Nan) => Value::Nan,
             (Value::Number(_), Value::Infinity(neg)) => Value::Infinity(!neg),
+            (Value::Number(a), Value::Null) => Value::Number(a),
  
             (Value::String(a), Value::Number(b)) => {
                 if a.is_empty() {
@@ -120,6 +134,7 @@ impl ops::Sub for Value {
                     Ok(_) => Value::Infinity(!neg), // '1' - Infinity = -Infinity; '1' - -Infinity = Infinity;
                 }
             },
+            (Value::String(a), Value::Null) => Value::String(a) - Value::Number(0.0), // Considering null as 0
  
             (Value::Undefined, _) => Value::Nan,
             (Value::Nan, _) => Value::Nan,
@@ -142,6 +157,14 @@ impl ops::Sub for Value {
                 }
                 Value::Nan // Infinity - Infinity = NaN; -Infinity - -Infinity = NaN;
             },
+            (Value::Infinity(neg), Value::Null) => Value::Infinity(neg),
+
+            (Value::Null, Value::Number(b)) => Value::Number(-b),
+            (Value::Null, Value::String(b)) => Value::Number(0.0) - Value::String(b),
+            (Value::Null, Value::Undefined) => Value::Nan,
+            (Value::Null, Value::Nan) => Value::Nan,
+            (Value::Null, Value::Infinity(neg)) => Value::Infinity(!neg),
+            (Value::Null, Value::Null) => Value::Number(0.0),
         }    
     }
 }
@@ -170,7 +193,8 @@ impl ops::Mul for Value {
                     return Value::Infinity(!neg); // -2 * Infinity = -Infinity; -2 * -Infinity = Infinity;
                 }
                 Value::Infinity(neg) // 2 * Infinity = Infinity; 2 * -Infinity = -Infinity;
-            }
+            },
+            (Value::Number(_), Value::Null) => Value::Number(0.0),
  
             (Value::String(a), Value::Number(b)) => {
                 if a.is_empty() {
@@ -207,7 +231,8 @@ impl ops::Mul for Value {
                     Err(_) => Value::Nan, // 'a' * Infinity = NaN; 'a' * -Infinity = NaN;
                     Ok(parsed) => Value::Number(parsed) * Value::Infinity(neg), // Considering parsed value as number!
                 }
-            }
+            },
+            (Value::String(a), Value::Null) => Value::String(a) * Value::Number(0.0), // Considering 'null' as 0
  
             (Value::Undefined, _) => Value::Nan,
             (Value::Nan, _) => Value::Nan,
@@ -217,6 +242,14 @@ impl ops::Mul for Value {
             (Value::Infinity(_), Value::Undefined) => Value::Nan,
             (Value::Infinity(_), Value:: Nan) => Value::Nan,
             (Value::Infinity(a), Value::Infinity(b)) => Value::Infinity(a ^ b),
+            (Value::Infinity(_), Value::Null) => Value::Nan,
+
+            (Value::Null, Value::Number(_)) => Value::Number(0.0),
+            (Value::Null, Value::String(b)) => Value::String(b) * Value::Null,
+            (Value::Null, Value::Undefined) => Value::Nan,
+            (Value::Null, Value::Nan) => Value::Nan,
+            (Value::Null, Value::Infinity(_)) => Value::Nan,
+            (Value::Null, Value::Null) => Value::Number(0.0),
         }
     }
 }
@@ -227,14 +260,18 @@ impl ops::Div for Value {
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Value::Number(a), Value::Number(b)) => {
-                if b == 0.0 {
+                if a == 0.0 && b == 0.0 {
+                    return Value::Nan; // 0 / 0 = NaN
+                } else if b == 0.0 {
                     return Value::Infinity(a < 0.0); // 1 / 0 = Infinity; -1 / 0 = -Infinity;
                 }
                 Value::Number(a / b)
             },
             (Value::Number(a), Value::String(b)) => {
-                if b.is_empty() {
+                if b.is_empty() && a != 0.0 {
                     return Value::Infinity(a < 0.0); // 1 / '' = Infinity; -1 / '' = -Infinity;
+                } else if b.is_empty() {
+                    return Value::Nan; // 0 / '' = NaN
                 }
                 match b.parse::<f64>() {
                     Err(_) => Value::Nan, // 9 / 'a' = NaN
@@ -244,6 +281,7 @@ impl ops::Div for Value {
             (Value::Number(_), Value::Undefined) => Value::Nan,
             (Value::Number(_), Value::Nan) => Value::Nan,
             (Value::Number(_), Value::Infinity(_)) => Value::Number(0.0),
+            (Value::Number(a), Value::Null) => Value::Number(a) / Value::Number(0.0),
  
             (Value::String(a), Value::Number(b)) => {
                 let parse_a_result = a.parse::<f64>();
@@ -284,7 +322,8 @@ impl ops::Div for Value {
                     Err(_) => Value::Nan, // 'a' / Infinity = NaN
                     Ok(_) => Value::Number(0.0), // '123' / Infinity = 0
                 }
-            }
+            },
+            (Value::String(a), Value::Null) => Value::String(a) / Value::Number(0.0),
  
             (Value::Undefined, _) => Value::Nan,
             (Value::Nan, _) => Value::Nan,
@@ -302,6 +341,14 @@ impl ops::Div for Value {
             (Value::Infinity(_), Value::Undefined) => Value::Nan,
             (Value::Infinity(_), Value::Nan) => Value::Nan,
             (Value::Infinity(_), Value::Infinity(_)) => Value::Nan,
+            (Value::Infinity(neg), Value::Null) => Value::Infinity(neg),
+
+            (Value::Null, Value::Number(b)) => Value::Number(0.0) / Value::Number(b),
+            (Value::Null, Value::String(b)) => Value::Number(0.0) / Value::String(b),
+            (Value::Null, Value::Undefined) => Value::Nan,
+            (Value::Null, Value::Nan) => Value::Nan,
+            (Value::Null, Value::Infinity(_)) => Value::Number(0.0),
+            (Value::Null, Value::Null) => Value::Nan,
         }
     }
 }
@@ -318,6 +365,7 @@ mod tests {
         assert_eq!(Value::Number(1.0) + Value::Nan, Value::Nan);
         assert_eq!(Value::Number(1.0) + Value::Infinity(false), Value::Infinity(false));
         assert_eq!(Value::Number(1.0) + Value::Infinity(true), Value::Infinity(true));
+        assert_eq!(Value::Number(1.0) + Value::Null, Value::Number(1.0));
 
         assert_eq!(Value::String("a".to_string()) + Value::Number(1.0), Value::String("a1".to_string()));
         assert_eq!(Value::String("a".to_string()) + Value::String("b".to_string()), Value::String("ab".to_string()));
@@ -325,6 +373,7 @@ mod tests {
         assert_eq!(Value::String("a".to_string()) + Value::Nan, Value::String("aNaN".to_string()));
         assert_eq!(Value::String("a".to_string()) + Value::Infinity(false), Value::String("aInfinity".to_string()));
         assert_eq!(Value::String("a".to_string()) + Value::Infinity(true), Value::String("a-Infinity".to_string()));
+        assert_eq!(Value::String("a".to_string()) + Value::Null, Value::String("anull".to_string()));
 
         assert_eq!(Value::Undefined + Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Undefined + Value::String("a".to_string()), Value::String("undefineda".to_string()));
@@ -332,6 +381,7 @@ mod tests {
         assert_eq!(Value::Undefined + Value::Nan, Value::Nan);
         assert_eq!(Value::Undefined + Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Undefined + Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Undefined + Value::Null, Value::Nan);
 
         assert_eq!(Value::Nan + Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Nan + Value::String("a".to_string()), Value::String("NaNa".to_string()));
@@ -339,6 +389,7 @@ mod tests {
         assert_eq!(Value::Nan + Value::Nan, Value::Nan);
         assert_eq!(Value::Nan + Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Nan + Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Nan + Value::Null, Value::Nan);
 
         assert_eq!(Value::Infinity(false) + Value::Number(2.0), Value::Infinity(false));
         assert_eq!(Value::Infinity(true) + Value::Number(2.0), Value::Infinity(true));
@@ -351,6 +402,14 @@ mod tests {
         assert_eq!(Value::Infinity(false) + Value::Infinity(false), Value::Infinity(false));
         assert_eq!(Value::Infinity(true) + Value::Infinity(true), Value::Infinity(true));
         assert_eq!(Value::Infinity(false) + Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Infinity(false) + Value::Null, Value::Infinity(false));
+
+        assert_eq!(Value::Null + Value::Number(-2.0), Value::Number(-2.0));
+        assert_eq!(Value::Null + Value::String("!".to_string()), Value::String("null!".to_string()));
+        assert_eq!(Value::Null + Value::Undefined, Value::Nan);
+        assert_eq!(Value::Null + Value::Nan, Value::Nan);
+        assert_eq!(Value::Null + Value::Infinity(true), Value::Infinity(true));
+        assert_eq!(Value::Null + Value::Null, Value::Number(0.0));
     }
 
     #[test]
@@ -363,6 +422,7 @@ mod tests {
         assert_eq!(Value::Number(1.0) - Value::Nan, Value::Nan);
         assert_eq!(Value::Number(1.0) - Value::Infinity(false), Value::Infinity(true));
         assert_eq!(Value::Number(1.0) - Value::Infinity(true), Value::Infinity(false));
+        assert_eq!(Value::Number(2.0) - Value::Null, Value::Number(2.0));
 
         assert_eq!(Value::String("a".to_string()) - Value::Number(1.0), Value::Nan);
         assert_eq!(Value::String("2".to_string()) - Value::Number(1.0), Value::Number(1.0));
@@ -375,6 +435,9 @@ mod tests {
         assert_eq!(Value::String("".to_string()) - Value::Infinity(false), Value::Infinity(true));
         assert_eq!(Value::String("2".to_string()) - Value::Infinity(true), Value::Infinity(false));
         assert_eq!(Value::String("a".to_string()) - Value::Infinity(false), Value::Nan);
+        assert_eq!(Value::String("a".to_string()) - Value::Null, Value::Nan);
+        assert_eq!(Value::String("".to_string()) - Value::Null, Value::Number(0.0));
+        assert_eq!(Value::String("3".to_string()) - Value::Null, Value::Number(3.0));
 
         assert_eq!(Value::Undefined - Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Undefined - Value::String("1".to_string()), Value::Nan);
@@ -382,6 +445,7 @@ mod tests {
         assert_eq!(Value::Undefined - Value::Nan, Value::Nan);
         assert_eq!(Value::Undefined - Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Undefined - Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Undefined - Value::Null, Value::Nan);
 
         assert_eq!(Value::Nan - Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Nan - Value::String("1".to_string()), Value::Nan);
@@ -389,6 +453,7 @@ mod tests {
         assert_eq!(Value::Nan - Value::Nan, Value::Nan);
         assert_eq!(Value::Nan - Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Nan - Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Nan - Value::Null, Value::Nan);
 
         assert_eq!(Value::Infinity(false) - Value::Number(1.0), Value::Infinity(false));
         assert_eq!(Value::Infinity(true) - Value::Number(1.0), Value::Infinity(true));
@@ -405,6 +470,17 @@ mod tests {
         assert_eq!(Value::Infinity(false) - Value::Infinity(true), Value::Infinity(false));
         assert_eq!(Value::Infinity(true) - Value::Infinity(false), Value::Infinity(true));
         assert_eq!(Value::Infinity(false) - Value::Infinity(false), Value::Nan);
+        assert_eq!(Value::Infinity(true) - Value::Null, Value::Infinity(true));
+        assert_eq!(Value::Infinity(false) - Value::Null, Value::Infinity(false));
+
+        assert_eq!(Value::Null - Value::Number(2.0), Value::Number(-2.0));
+        assert_eq!(Value::Null - Value::String("".to_string()), Value::Number(0.0));
+        assert_eq!(Value::Null - Value::String("a".to_string()), Value::Nan);
+        assert_eq!(Value::Null - Value::String("2".to_string()), Value::Number(-2.0));
+        assert_eq!(Value::Null - Value::Undefined, Value::Nan);
+        assert_eq!(Value::Null - Value::Nan, Value::Nan);
+        assert_eq!(Value::Null - Value::Infinity(false), Value::Infinity(true));
+        assert_eq!(Value::Null - Value::Null, Value::Number(0.0));
     }
 
     #[test]
@@ -419,6 +495,7 @@ mod tests {
         assert_eq!(Value::Number(0.0) * Value::Infinity(true), Value::Nan);
         assert_eq!(Value::Number(-2.0) * Value::Infinity(false), Value::Infinity(true));
         assert_eq!(Value::Number(2.0) * Value::Infinity(true), Value::Infinity(true));
+        assert_eq!(Value::Number(2.0) * Value::Null, Value::Number(0.0));
 
         assert_eq!(Value::String("a".to_string()) * Value::Number(1.0), Value::Nan);
         assert_eq!(Value::String("2".to_string()) * Value::Number(2.0), Value::Number(4.0));
@@ -436,6 +513,9 @@ mod tests {
         assert_eq!(Value::String("0".to_string()) * Value::Infinity(true), Value::Nan);
         assert_eq!(Value::String("2".to_string()) * Value::Infinity(false), Value::Infinity(false));
         assert_eq!(Value::String("-2".to_string()) * Value::Infinity(false), Value::Infinity(true));
+        assert_eq!(Value::String("a".to_string()) * Value::Null, Value::Nan);
+        assert_eq!(Value::String("2".to_string()) * Value::Null, Value::Number(0.0));
+        assert_eq!(Value::String("".to_string()) * Value::Null, Value::Number(0.0));
 
         assert_eq!(Value::Undefined * Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Undefined * Value::String("1".to_string()), Value::Nan);
@@ -443,6 +523,7 @@ mod tests {
         assert_eq!(Value::Undefined * Value::Nan, Value::Nan);
         assert_eq!(Value::Undefined * Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Undefined * Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Undefined * Value::Null, Value::Nan);
 
         assert_eq!(Value::Nan * Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Nan * Value::String("1".to_string()), Value::Nan);
@@ -450,6 +531,7 @@ mod tests {
         assert_eq!(Value::Nan * Value::Nan, Value::Nan);
         assert_eq!(Value::Nan * Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Nan * Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Nan * Value::Null, Value::Nan);
 
         assert_eq!(Value::Infinity(false) * Value::Number(0.0), Value::Nan);
         assert_eq!(Value::Infinity(true) * Value::Number(0.0), Value::Nan);
@@ -471,12 +553,25 @@ mod tests {
         assert_eq!(Value::Infinity(true) * Value::Infinity(false), Value::Infinity(true));
         assert_eq!(Value::Infinity(false) * Value::Infinity(true), Value::Infinity(true));
         assert_eq!(Value::Infinity(true) * Value::Infinity(true), Value::Infinity(false));
+        assert_eq!(Value::Infinity(false) * Value::Null, Value::Nan);
+        assert_eq!(Value::Infinity(true) * Value::Null, Value::Nan);
+
+        assert_eq!(Value::Null * Value::Number(2.0), Value::Number(0.0));
+        assert_eq!(Value::Null * Value::String("a".to_string()), Value::Nan);
+        assert_eq!(Value::Null * Value::String("2".to_string()), Value::Number(0.0));
+        assert_eq!(Value::Null * Value::String("".to_string()), Value::Number(0.0));
+        assert_eq!(Value::Null * Value::Undefined, Value::Nan);
+        assert_eq!(Value::Null * Value::Nan, Value::Nan);
+        assert_eq!(Value::Null * Value::Infinity(false), Value::Nan);
+        assert_eq!(Value::Null * Value::Null, Value::Number(0.0));
     }
 
     #[test]
     fn test_div_values() {
         assert_eq!(Value::Number(3.0) / Value::Number(4.0), Value::Number(0.75));
+        assert_eq!(Value::Number(0.0) / Value::Number(0.0), Value::Nan);
         assert_eq!(Value::Number(-3.0) / Value::Number(0.0), Value::Infinity(true));
+        assert_eq!(Value::Number(0.0) / Value::String("".to_string()), Value::Nan);
         assert_eq!(Value::Number(3.0) / Value::String("".to_string()), Value::Infinity(false));
         assert_eq!(Value::Number(9.0) / Value::String("-3.0".to_string()), Value::Number(-3.0));
         assert_eq!(Value::Number(3.0) / Value::String("a".to_string()), Value::Nan);
@@ -484,6 +579,8 @@ mod tests {
         assert_eq!(Value::Number(3.0) / Value::Nan, Value::Nan);
         assert_eq!(Value::Number(3.0) / Value::Infinity(false), Value::Number(0.0));
         assert_eq!(Value::Number(3.0) / Value::Infinity(true), Value::Number(0.0));
+        assert_eq!(Value::Number(3.0) / Value::Null, Value::Infinity(false));
+        assert_eq!(Value::Number(0.0) / Value::Null, Value::Nan);
 
         assert_eq!(Value::String("".to_string()) / Value::Number(2.0), Value::Number(0.0));
         assert_eq!(Value::String("".to_string()) / Value::Number(0.0), Value::Nan);
@@ -504,6 +601,9 @@ mod tests {
         assert_eq!(Value::String("".to_string()) / Value::Infinity(true), Value::Number(0.0));
         assert_eq!(Value::String("a".to_string()) / Value::Infinity(false), Value::Nan);
         assert_eq!(Value::String("3.0".to_string()) / Value::Infinity(true), Value::Number(0.0));
+        assert_eq!(Value::String("".to_string()) / Value::Null, Value::Nan);
+        assert_eq!(Value::String("a".to_string()) / Value::Null, Value::Nan);
+        assert_eq!(Value::String("-2".to_string()) / Value::Null, Value::Infinity(true));
 
         assert_eq!(Value::Undefined / Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Undefined / Value::String("".to_string()), Value::Nan);
@@ -513,6 +613,7 @@ mod tests {
         assert_eq!(Value::Undefined / Value::Nan, Value::Nan);
         assert_eq!(Value::Undefined / Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Undefined / Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Undefined / Value::Null, Value::Nan);
 
         assert_eq!(Value::Nan / Value::Number(2.0), Value::Nan);
         assert_eq!(Value::Nan / Value::String("".to_string()), Value::Nan);
@@ -522,6 +623,7 @@ mod tests {
         assert_eq!(Value::Nan / Value::Nan, Value::Nan);
         assert_eq!(Value::Nan / Value::Infinity(false), Value::Nan);
         assert_eq!(Value::Nan / Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Nan / Value::Null, Value::Nan);
 
         assert_eq!(Value::Infinity(false) / Value::Number(2.0), Value::Infinity(false));
         assert_eq!(Value::Infinity(false) / Value::Number(-2.0), Value::Infinity(true));
@@ -537,5 +639,18 @@ mod tests {
         assert_eq!(Value::Infinity(false) / Value::Undefined, Value::Nan);
         assert_eq!(Value::Infinity(true) / Value::Nan, Value::Nan);
         assert_eq!(Value::Infinity(false) / Value::Infinity(true), Value::Nan);
+        assert_eq!(Value::Infinity(true) / Value::Null, Value::Infinity(true));
+        assert_eq!(Value::Infinity(false) / Value::Null, Value::Infinity(false));
+
+        assert_eq!(Value::Null / Value::Number(2.0), Value::Number(0.0));
+        assert_eq!(Value::Null / Value::Number(0.0), Value::Nan);
+        assert_eq!(Value::Null / Value::String("".to_string()), Value::Nan);
+        assert_eq!(Value::Null / Value::String("a".to_string()), Value::Nan);
+        assert_eq!(Value::Null / Value::String("2".to_string()), Value::Number(0.0));
+        assert_eq!(Value::Null / Value::Undefined, Value::Nan);
+        assert_eq!(Value::Null / Value::Nan, Value::Nan);
+        assert_eq!(Value::Null / Value::Infinity(false), Value::Number(0.0));
+        assert_eq!(Value::Null / Value::Infinity(true), Value::Number(0.0));
+        assert_eq!(Value::Null / Value::Null, Value::Nan);
     }
 }

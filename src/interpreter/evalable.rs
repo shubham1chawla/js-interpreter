@@ -45,7 +45,8 @@ impl Evalable for Interpreter {
 
             // ----- LITERALS -----
             Tree::NumericLiteral { .. } 
-            | Tree::StringLiteral { .. } => self.eval_literal(tree),
+            | Tree::StringLiteral { .. } 
+            | Tree::NullLiteral => self.eval_literal(tree),
 
             // ----- IDENTIFIER ------
             Tree::Identifier { .. } => self.eval_identifier(tree, env_ref),

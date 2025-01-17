@@ -11,8 +11,8 @@ mod value;
 
 fn main() {
     let content_string = "
-        let x = 10, y = 'Hello', z = 10 * (5 - '2');
-        z;
+        let x = null, y = 'Hello', z = 10 * (5 - '2');
+        x;
     ";
 
     let mut parser = Parser::new(content_string.to_owned()).unwrap();
