@@ -7,4 +7,4 @@ pub use crate::tree::Tree;
 pub use crate::value::Value;
 
 pub type Result<T> = core::result::Result<T, Error>;
-pub type EnvRef = std::cell::RefCell<Environment>;
+pub type EnvRef<'a> = std::cell::RefCell<&'a mut Environment>;

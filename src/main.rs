@@ -19,7 +19,8 @@ fn main() {
     let result = parser.parse();
     let tree = result.unwrap();
 
-    let interpreter = Interpreter::new(tree);
+    let mut env = EnvironmentBuilder::default().build().unwrap();
+    let interpreter = Interpreter::new(&tree, &mut env);
     let result = interpreter.eval();
     println!("{result:?}");
 }

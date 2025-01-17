@@ -10,7 +10,7 @@ pub trait LiteralEvalable {
     fn eval_literal(&self, literal: &Tree) -> Result<Value>;
 }
 
-impl LiteralEvalable for Interpreter {
+impl <'a> LiteralEvalable for Interpreter<'a> {
     fn eval_literal(&self, literal: &Tree) -> Result<Value> {
         match literal {
             Tree::NumericLiteral { value } => Ok(Value::Number(*value)),
@@ -20,5 +20,26 @@ impl LiteralEvalable for Interpreter {
                 format!("Unimplemented literal node: {literal}")
             ))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+    use crate::interpreter::tests::*;
+
+    #[test]
+    fn test_numeric_literal() {
+        assert_value(Tree::NumericLiteral { value: 10.0 }, Value::Number(10.0));
+    }
+
+    #[test]
+    fn test_string_literal() {
+        assert_value(Tree::StringLiteral { value: "Hello!".to_string() }, Value::String("Hello!".to_string()));
+    }
+
+    #[test]
+    fn test_null_literal() {
+        assert_value(Tree::NullLiteral, Value::Null);
     }
 }

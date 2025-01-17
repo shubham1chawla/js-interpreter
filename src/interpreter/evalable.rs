@@ -17,9 +17,9 @@ pub trait Evalable {
     fn eval_tree(&self, tree: &Tree, env_ref: &EnvRef) -> Result<Value>;
 }
 
-impl Evalable for Interpreter {
+impl <'a> Evalable for Interpreter<'a> {
     fn eval(&self) -> Result<Value> {
-        self.eval_tree(&self.tree, &self.env_ref)
+        self.eval_tree(self.tree, &self.env_ref)
     }
 
     fn eval_tree(&self, tree: &Tree, env_ref: &EnvRef) -> Result<Value> {
