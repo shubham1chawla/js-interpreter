@@ -6,6 +6,7 @@ pub trait LiteralEvalable {
      * + NumericLiteral
      * + StringLiteral
      * + NullLiteral
+     * + BooleanLiteral
      */
     fn eval_literal(&self, literal: &Tree) -> Result<Value>;
 }
@@ -16,6 +17,7 @@ impl <'a> LiteralEvalable for Interpreter<'a> {
             Tree::NumericLiteral { value } => Ok(Value::Number(*value)),
             Tree::StringLiteral { value } => Ok(Value::String((*value).clone())),
             Tree::NullLiteral => Ok(Value::Null),
+            Tree::BooleanLiteral { value } => Ok(Value::Boolean(*value)),
             _ => Err(Error::Runtime(
                 format!("Unimplemented literal node: {literal}")
             ))
@@ -41,5 +43,10 @@ mod tests {
     #[test]
     fn test_null_literal() {
         assert_value(Tree::NullLiteral, Value::Null);
+    }
+
+    #[test]
+    fn test_boolean_literal() {
+        assert_value(Tree::BooleanLiteral { value: true }, Value::Boolean(true));
     }
 }

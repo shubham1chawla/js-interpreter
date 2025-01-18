@@ -11,7 +11,7 @@ mod value;
 
 fn main() {
     let content_string = "
-        let x = null, y = 'Hello', z = 10 * (5 - '2');
+        let x = null, y = 'Hello', z = true;
         x;
     ";
 
